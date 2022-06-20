@@ -1,11 +1,11 @@
 import 'package:calling_app/calling_screen.dart';
 import 'package:calling_app/config/fcm_utils.dart';
 import 'package:calling_app/main.dart';
+import 'package:calling_app/services/fcm_service.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({ Key? key }) : super(key: key);
@@ -17,12 +17,12 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String? fcmToken = '';
   String? fcmTitle = '';
+  FCMService fcmService = FCMService();
 
   @override
   void initState() {
     getFirebaseToken();
     foregroundMode();
-    backgroundMode();
     initializeConnectyCube();
     super.initState();
   }
@@ -30,6 +30,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void initializeConnectyCube() {
     ConnectycubeFlutterCallKit.getToken().then((token) {
       log('::::::::::::::::::::::::::::::::Token: $token');
+      setState(() {
+        fcmToken = token;
+      });
       // use received token for subscription on push notifications on your server
     });
 
@@ -63,58 +66,11 @@ class _MyHomePageState extends State<MyHomePage> {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
       if (notification != null && android != null) {
-        log(notification.title!);
-        log(message.from!);
-        setState(() {
-          fcmTitle = notification.title;
-        });
-        flutterLocalNotificationsPlugin.show(
-
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          NotificationDetails(
-            android: AndroidNotificationDetails(
-              channel.id,
-              channel.name,
-              channel.description,
-              color: Colors.blue,
-              playSound: true,
-              icon: '@mipmap/ic_launcher',
-            ),
-          ));
         initiateCall();
       }
     });
   }
 
-  //works when app is in background mode and user taps on the notification
-  void backgroundMode() {
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('A new onMessageOpenedApp event was published!');
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
-      if (notification != null && android != null) {
-        log(notification.body!);
-        setState(() {
-          fcmTitle = notification.title;
-        });
-        showDialog(
-          context: context,
-          builder: (_) {
-            return AlertDialog(
-              title: Text(notification.title!),
-              content: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(notification.body!)],
-                ),
-              ),
-            );
-          });
-      }
-    });
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,7 +79,10 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: ElevatedButton(
-          onPressed: initiateCall,
+          onPressed: () async {
+            bool isRequestSuccessful = await fcmService.sendCallRequest('$fcmToken');
+            isRequestSuccessful ? initiateCall() : Container();
+          },
           child: Text('Call'),
         ),
       ),
