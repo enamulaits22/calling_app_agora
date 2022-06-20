@@ -10,7 +10,7 @@ import 'package:calling_app/calling_screen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+  const MyHomePage({ Key? key }) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -71,32 +71,33 @@ class _MyHomePageState extends State<MyHomePage> {
           fcmTitle = notification.title;
         });
         flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
-              android: AndroidNotificationDetails(
-                channel.id,
-                channel.name,
-                channel.description,
-                color: Colors.blue,
-                playSound: true,
-                icon: '@mipmap/ic_launcher',
-              ),
-            ));
+
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              channel.id,
+              channel.name,
+              channel.description,
+              color: Colors.blue,
+              playSound: true,
+              icon: '@mipmap/ic_launcher',
+            ),
+          ));
         showDialog(
-            context: context,
-            builder: (_) {
-              return AlertDialog(
-                title: Text(notification.title!),
-                content: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [Text(notification.body!)],
-                  ),
+          context: context,
+          builder: (_) {
+            return AlertDialog(
+              title: Text(notification.title!),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [Text(notification.body!)],
                 ),
-              );
-            });
+              ),
+            );
+          });
       }
     });
   }
@@ -117,7 +118,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     ConnectycubeFlutterCallKit.showCallNotification(callEvent);
   }
-
   //works when app is in background mode and user taps on the notification
   void backgroundMode() {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -130,22 +130,21 @@ class _MyHomePageState extends State<MyHomePage> {
           fcmTitle = notification.title;
         });
         showDialog(
-            context: context,
-            builder: (_) {
-              return AlertDialog(
-                title: Text(notification.title!),
-                content: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [Text(notification.body!)],
-                  ),
+          context: context,
+          builder: (_) {
+            return AlertDialog(
+              title: Text(notification.title!),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [Text(notification.body!)],
                 ),
-              );
-            });
+              ),
+            );
+          });
       }
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,6 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: ElevatedButton(
           onPressed: showIncomingCallNotification,
+
           child: Text('Call'),
         ),
       ),
