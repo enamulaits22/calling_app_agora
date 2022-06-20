@@ -1,4 +1,6 @@
+import 'package:calling_app/calling_screen.dart';
 import 'package:calling_app/config/fcm_utils.dart';
+import 'package:calling_app/main.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:developer';
@@ -35,6 +37,20 @@ class _MyHomePageState extends State<MyHomePage> {
       log('::::::::::::::::::::::::::::::::Refresh Token: $token');
       // use refreshed token for resubscription on your server
     };
+
+    ConnectycubeFlutterCallKit.instance.init(
+      onCallAccepted: _onCallAccepted,
+      onCallRejected: _onCallRejected,
+    );
+  }
+
+  Future<void> _onCallAccepted(CallEvent callEvent) async {
+    navigatorKey?.currentState
+        ?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
+  }
+
+  Future<void> _onCallRejected(CallEvent callEvent) async {
+    // the call was rejected
   }
 
   Future<void> getFirebaseToken() async {
@@ -53,6 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
           fcmTitle = notification.title;
         });
         flutterLocalNotificationsPlugin.show(
+
           notification.hashCode,
           notification.title,
           notification.body,
@@ -106,12 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: ElevatedButton(
-          onPressed: () {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => CallingScreen()),
-            // );
-          },
+          onPressed: initiateCall,
           child: Text('Call'),
         ),
       ),
