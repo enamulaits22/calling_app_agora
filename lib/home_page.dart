@@ -1,11 +1,8 @@
 import 'package:calling_app/config/fcm_utils.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
-import 'package:connectycube_sdk/connectycube_calls.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'dart:developer' as lg;
-import 'dart:math';
+import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:calling_app/calling_screen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -30,19 +27,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void initializeConnectyCube() {
     ConnectycubeFlutterCallKit.getToken().then((token) {
-      lg.log('::::::::::::::::::::::::::::::::Token: $token');
+      log('::::::::::::::::::::::::::::::::Token: $token');
       // use received token for subscription on push notifications on your server
     });
 
     ConnectycubeFlutterCallKit.onTokenRefreshed = (token) {
-      lg.log('::::::::::::::::::::::::::::::::Refresh Token: $token');
+      log('::::::::::::::::::::::::::::::::Refresh Token: $token');
       // use refreshed token for resubscription on your server
     };
   }
 
   Future<void> getFirebaseToken() async {
     fcmToken = await FirebaseMessaging.instance.getToken();
-    lg.log('Token: $fcmToken');
+    log('Token: $fcmToken');
   }
 
   void foregroundMode() {
@@ -50,8 +47,8 @@ class _MyHomePageState extends State<MyHomePage> {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
       if (notification != null && android != null) {
-        lg.log(notification.title!);
-        lg.log(message.from!);
+        log(notification.title!);
+        log(message.from!);
         setState(() {
           fcmTitle = notification.title;
         });
@@ -69,19 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
               icon: '@mipmap/ic_launcher',
             ),
           ));
-        showDialog(
-          context: context,
-          builder: (_) {
-            return AlertDialog(
-              title: Text(notification.title!),
-              content: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(notification.body!)],
-                ),
-              ),
-            );
-          });
+        initiateCall();
       }
     });
   }
@@ -93,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
       if (notification != null && android != null) {
-        lg.log(notification.body!);
+        log(notification.body!);
         setState(() {
           fcmTitle = notification.title;
         });
@@ -126,18 +111,6 @@ class _MyHomePageState extends State<MyHomePage> {
             //   context,
             //   MaterialPageRoute(builder: (context) => CallingScreen()),
             // );
-            Random random = Random();
-            CallEvent callEvent = CallEvent(
-              sessionId: random.nextInt(100).toString(),
-              callType: CallType.AUDIO_CALL,
-              callerId: 9644,
-              callerName: 'Enamul',
-              opponentsIds: {1},
-              userInfo: {'customParameter1': 'value1'},
-            );
-            ConnectycubeFlutterCallKit.instance.updateConfig(ringtone: 'basi_sur', icon: 'app_icon', color: '#07711e');
-
-            ConnectycubeFlutterCallKit.showCallNotification(callEvent);
           },
           child: Text('Call'),
         ),
