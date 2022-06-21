@@ -23,12 +23,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     // getFirebaseToken();
-    event.stream.listen((event) {
-      log(event.toString());
-      if(event == 1){
- Navigator.of(context).push(MaterialPageRoute(builder: (context) => CallingScreen()));
-      }
-    },);
     foregroundMode();
     initializeConnectyCube();
     super.initState();
