@@ -37,7 +37,13 @@ class _MyHomePageState extends State<MyHomePage> {
       });
   }
 
-  void foregroundMode() {
+  void foregroundMode() async{
+    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+    var initialMessage = await _firebaseMessaging.getInitialMessage();
+
+    if (initialMessage != null) {
+      _handleMessage(initialMessage);
+    }
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
@@ -74,5 +80,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       )
     );
+  }
+
+  void _handleMessage(RemoteMessage initialMessage) {
+    log('calling remote message');
   }
 }
