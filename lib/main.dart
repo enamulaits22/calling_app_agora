@@ -16,7 +16,8 @@ Future<void> main() async {
     badge: true,
     sound: true,
   );
-  
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
   runApp(MyApp());
 }
 

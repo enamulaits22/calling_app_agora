@@ -26,8 +26,6 @@ class _MyHomePageState extends State<MyHomePage> {
     foregroundMode();
     initializeConnectyCube();
     super.initState();
-
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   }
 
   void initializeConnectyCube() {
