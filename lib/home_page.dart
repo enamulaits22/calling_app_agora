@@ -70,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   log('tokendfdf' + token);
                   bool isRequestSuccessful = await fcmService.sendCallRequest('$token');
                   if (isRequestSuccessful) {
-                    navigatorKey?.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
+                    navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
                   }
                 },
                 child: Text(ListOfDevices.fcmList[index]['name'].toString()),
