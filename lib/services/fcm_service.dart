@@ -1,5 +1,8 @@
+
+
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
@@ -28,15 +31,22 @@ class FCMService {
       'Content-Type': 'application/json'
     };
 
-    final http.Response response = await http.post(url, body: body, headers: headers);
-
-    if (response.statusCode == 200) {
-      log(response.body);
-      log('Call send successful!!!');
-      isCallSuccessful = true;
-      return isCallSuccessful;
-    } else {
-      throw Exception('Failed to submit');
+    try {
+      final response = await http.post(url, body: body, headers: headers);
+      if (response.statusCode == 200) {
+        log(response.body);
+        log('Call send successful!!!');
+        isCallSuccessful = true;
+      } else {
+        log('Failed to call!!!');
+        isCallSuccessful = false;
+      }
+    } on Exception catch (e) {
+      if (e is SocketException) {
+        log('Failed to call!!!');
+        isCallSuccessful = false;
+      }
     }
+    return isCallSuccessful;
   }
 }

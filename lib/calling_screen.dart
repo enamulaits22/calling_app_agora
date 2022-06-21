@@ -32,7 +32,7 @@ class _CallingScreenState extends State<CallingScreen> {
   // Init the app
   Future<void> initPlatformState() async {
     if (defaultTargetPlatform == TargetPlatform.android) {
-           await [Permission.microphone, Permission.camera].request();
+      await [Permission.microphone, Permission.camera].request();
     }
 
     // Create RTC client instance
@@ -40,25 +40,29 @@ class _CallingScreenState extends State<CallingScreen> {
     engine = await RtcEngine.createWithContext(context);
     // Define event handling logic
     engine.setEventHandler(RtcEngineEventHandler(
-        joinChannelSuccess: (String channel, int uid, int elapsed) {
-          log('joinChannelSuccess ${channel} ${uid}');
-          setState(() {
-            _joined = true;
-          });
-        }, userJoined: (int uid, int elapsed) {
-      log('userJoined ${uid}');
-      setState(() {
-        _remoteUid = uid;
-      });
-    }, userOffline: (int uid, UserOfflineReason reason) {
-      log('userOffline ${uid}');
-      setState(() {
-        _remoteUid = 0;
-      });
+      joinChannelSuccess: (String channel, int uid, int elapsed) {
+        log('joinChannelSuccess ${channel} ${uid}');
+        setState(() {
+          _joined = true;
+        });
+      },
+      userJoined: (int uid, int elapsed) {
+        log('userJoined ${uid}');
+        setState(() {
+          _remoteUid = uid;
+          _switch = true;
+        });
+      },
+      userOffline: (int uid, UserOfflineReason reason) {
+        log('userOffline ${uid}');
+        setState(() {
+         _remoteUid = 0;
+         _onLeaveChannel();
+        });
     }));
     // Enable video
     await engine.enableVideo();
-    // Join channel with channel name as 123
+    // Join channel with channel name
     await engine.joinChannel(Config.Token, Config.channelName, null, 0);
   }
 
@@ -76,7 +80,7 @@ class _CallingScreenState extends State<CallingScreen> {
               child: _switch ? _renderRemoteVideo() : _renderLocalPreview(),
             ),
             Align(
-              alignment: Alignment.topLeft,
+              alignment: Alignment.topRight,
               child: Container(
                 width: 100,
                 height: 100,
