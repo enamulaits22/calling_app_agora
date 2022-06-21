@@ -23,9 +23,17 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     // getFirebaseToken();
+    event.stream.listen((event) {
+      log(event.toString());
+      if(event == 1){
+ Navigator.of(context).push(MaterialPageRoute(builder: (context) => CallingScreen()));
+      }
+    },);
     foregroundMode();
     initializeConnectyCube();
     super.initState();
+
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   }
 
   void initializeConnectyCube() {
@@ -64,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   log('tokendfdf' + token);
                   bool isRequestSuccessful = await fcmService.sendCallRequest('$token');
                   if (isRequestSuccessful) {
-                    navigatorKey?.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
+                    navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
                   }
                 },
                 child: Text(ListOfDevices.fcmList[index]['name'].toString()),
