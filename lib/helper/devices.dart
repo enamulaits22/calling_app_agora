@@ -5,11 +5,11 @@ class ListOfDevices{
   static List<Map<String, String>> fcmList = [
     {
       'name' : 'Riead',
-      'token' : 'fNmhVzjFSnyzyxl6Fyoaqt:APA91bGz6f2X8dauG_mJX_AS-OaQuWHWCcDS5JMVflrsJz_kED7ahMSUUysOoUyKLiZ1hwKtTPT3Ea2rPBWpZ0gC8somcbRDyhlJykh-hT3wHF8R0TJbf5G7n5KJtAafcmpqBZGC0XAz',
+        'token' : 'dCQ051CrToaqr7SHmHjnVX:APA91bFsGB3Z5ZhyD5ll05L2wLcCEUBBIgrYS0ZRdhuAbKD2IQuyxmXGrysIYCz_ZxWtPPezkLgcaIxq0_vmsuPOVe0SqaAcdtprcvkmK7Sv0Kg9vrZsclXszN5QTrbrofNiGXj6W54X',
     },
     {
       'name' : 'Office',
-      'token' : 'cRw1kOHtQIyqHxR6jTEVGC:APA91bEq3wc3YK6DgjrddD38qfreRAd6Ah_oB5P6-VohahT6wJYXe9yI1cDMnTi_g-_XEVN7Uq_FzxDsB71Xm6uhH3wYv4wFKggjhyLAaFDVnst68Oy38zojWomO6Sz8coDCVum9aD_B',
+      'token' : 'fYXhI-h9SfawRwIGohccn5:APA91bGke7fcZLLIL6X1-2FL3n1XnwGBaXuGEKzpqZo07IzauEzo_L32AV-c-tzll-Ohf6Mt8LP6I1O3ZAczCPp4L_R0JP7eYNq_Agw3_SWTzLSvG-_i_iv_uVF4uMyuYtjHQUqkVO_4',
     }
   ];
 }

@@ -1,5 +1,5 @@
 import 'package:calling_app/calling_screen.dart';
-import 'package:calling_app/config/fcm_utils.dart';
+import 'package:calling_app/config/connectycube_call_kit.dart';
 import 'package:calling_app/helper/devices.dart';
 import 'package:calling_app/main.dart';
 import 'package:calling_app/services/fcm_service.dart';
@@ -15,17 +15,35 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
   String? fcmToken = '';
   String? fcmTitle = '';
   FCMService fcmService = FCMService();
+  bool _isInForeground = true;
 
   @override
   void initState() {
     // getFirebaseToken();
+
     foregroundMode();
     initializeConnectyCube();
+    WidgetsBinding.instance?.addObserver(this);
+    log('hurra1'+_isInForeground.toString());
     super.initState();
+  }
+
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    _isInForeground = (state == AppLifecycleState.resumed);
+    log('hurra2'+_isInForeground.toString());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance?.removeObserver(this);
+    super.dispose();
   }
 
   void initializeConnectyCube() {
@@ -38,17 +56,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void foregroundMode() async{
-    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-    var initialMessage = await _firebaseMessaging.getInitialMessage();
-
-    if (initialMessage != null) {
-      _handleMessage(initialMessage);
-    }
+    ConnectycubeFlutterCallKit.onCallAcceptedWhenTerminated = onCallAcceptedWhenTerminated;
+    await initiateFirebase();
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
       if (notification != null && android != null) {
-        initiateCall();
+        initiateConnectycubeCallKit();
       }
     });
   }

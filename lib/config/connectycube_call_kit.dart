@@ -4,11 +4,12 @@ import 'package:calling_app/calling_screen.dart';
 import 'package:calling_app/main.dart';
 import 'package:connectycube_sdk/connectycube_sdk.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 StreamController<int> event = StreamController();
 
-void initiateCall() {
+void initiateConnectycubeCallKit() {
   controlCall();
   math.Random random = math.Random();
   CallEvent callEvent = CallEvent(
@@ -20,9 +21,19 @@ void initiateCall() {
     userInfo: {'customParameter1': 'value1'},
   );
 
-  ConnectycubeFlutterCallKit.instance.updateConfig(ringtone: 'basi_sur', icon: 'app_icon', color: '#07711e');
+  //ConnectycubeFlutterCallKit.instance.updateConfig(ringtone: 'basi_sur', icon: 'app_icon', color: '#07711e');
   
   ConnectycubeFlutterCallKit.showCallNotification(callEvent);
+}
+
+Future<void> initiateFirebase() async {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  var initialMessage = await _firebaseMessaging.getInitialMessage();
+
+  if (initialMessage != null) {
+
+    log('calling remote message');
+  }
 }
 
 void controlCall() {
@@ -35,7 +46,8 @@ void controlCall() {
     //     navigatorKey?.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
     //   });
     // }
-    log(navigatorKey.currentContext.toString());
+    log('hurra:'+navigatorKey.currentState.toString());
+
     navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
   }
 
@@ -47,4 +59,10 @@ void controlCall() {
     onCallAccepted: _onCallAccepted,
     onCallRejected: _onCallRejected,
   );
+}
+
+Future<void> onCallAcceptedWhenTerminated(CallEvent callEvent) async{
+  event.sink.add(1);
+  navigatorKey.currentState?.push(MaterialPageRoute(builder: (context) => CallingScreen()));
+  log(callEvent.callerName);
 }

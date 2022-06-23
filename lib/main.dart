@@ -1,4 +1,4 @@
-import 'package:calling_app/config/fcm_utils.dart';
+import 'package:calling_app/config/connectycube_call_kit.dart';
 import 'package:calling_app/home_page.dart';
 // import 'package:connectycube_sdk/connectycube_sdk.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,13 +17,12 @@ Future<void> main() async {
     sound: true,
   );
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
   runApp(MyApp());
 }
 
 /// Top level function to handle incoming messages when the app is in the background
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  initiateCall();
+  initiateConnectycubeCallKit();
 }
 
 class MyApp extends StatelessWidget {
