@@ -7,7 +7,6 @@ import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
-StreamController<int> event = StreamController();
 
 void initiateConnectycubeCallKit() {
   controlCall();
@@ -62,7 +61,6 @@ void controlCall() {
 }
 
 Future<void> onCallAcceptedWhenTerminated(CallEvent callEvent) async{
-  event.sink.add(1);
   navigatorKey.currentState?.push(MaterialPageRoute(builder: (context) => CallingScreen()));
   log(callEvent.callerName);
 }

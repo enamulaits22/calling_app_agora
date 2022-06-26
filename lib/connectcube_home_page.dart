@@ -8,18 +8,19 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({ Key? key }) : super(key: key);
+class ConnectyCubeHomePage extends StatefulWidget {
+  const ConnectyCubeHomePage({ Key? key }) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<ConnectyCubeHomePage> createState() => _ConnectyCubeHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
+class _ConnectyCubeHomePageState extends State<ConnectyCubeHomePage> with WidgetsBindingObserver{
   String? fcmToken = '';
   String? fcmTitle = '';
   FCMService fcmService = FCMService();
   bool _isInForeground = true;
+
 
   @override
   void initState() {
@@ -62,7 +63,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
       if (notification != null && android != null) {
-        initiateConnectycubeCallKit();
+        //initiateConnectycubeCallKit();
       }
     });
   }
