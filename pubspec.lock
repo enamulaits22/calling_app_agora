@@ -60,9 +60,9 @@ packages:
   connectycube_flutter_call_kit:
     dependency: "direct main"
     description:
-      name: connectycube_flutter_call_kit
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "lib/packages/connectycube_flutter_call_kit-2.0.5"
+      relative: true
+    source: path
     version: "2.0.5"
   connectycube_sdk:
     dependency: "direct main"

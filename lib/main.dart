@@ -1,6 +1,6 @@
-import 'package:calling_app/config/fcm_utils.dart';
+import 'package:calling_app/config/setup_call.dart';
 import 'package:calling_app/home_page.dart';
-// import 'package:connectycube_sdk/connectycube_sdk.dart';
+import 'package:calling_app/services/fcm_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -24,11 +24,10 @@ Future<void> main() async {
 /// Top level function to handle incoming messages when the app is in the background
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   initiateCall();
+  await FCMService().changeStatus('female');
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -38,7 +37,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: MyHomePage(),
     );
   }
 }

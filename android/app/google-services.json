@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "96463064680",
-    "project_id": "callapp-86de5",
-    "storage_bucket": "callapp-86de5.appspot.com"
+    "project_number": "739278896573",
+    "project_id": "agora-call-3abc6",
+    "storage_bucket": "agora-call-3abc6.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:96463064680:android:8d48dcd519cf4f44df35dd",
+        "mobilesdk_app_id": "1:739278896573:android:94006e265d17c9c2a5a6d4",
         "android_client_info": {
           "package_name": "com.example.calling_app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "96463064680-7n4e697nac06587l43hgvuhnvnbqusfc.apps.googleusercontent.com",
+          "client_id": "739278896573-c3c2ha5fdnn04k3pj7scdp2hli3jddis.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAIYfLabv0eN317VbQZwsjUckE-W2Gyd9Q"
+          "current_key": "AIzaSyDtcGelzj1_ntoP8Uhs_TdNBhML0D2kPQk"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "96463064680-7n4e697nac06587l43hgvuhnvnbqusfc.apps.googleusercontent.com",
+              "client_id": "739278896573-c3c2ha5fdnn04k3pj7scdp2hli3jddis.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

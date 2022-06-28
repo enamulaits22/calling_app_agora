@@ -1,15 +1,21 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:calling_app/packages/connectycube_flutter_call_kit-2.0.5/lib/connectycube_flutter_call_kit.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+
 import 'package:calling_app/calling_screen.dart';
-import 'package:calling_app/config/fcm_utils.dart';
+import 'package:calling_app/config/setup_call.dart';
 import 'package:calling_app/helper/devices.dart';
 import 'package:calling_app/main.dart';
 import 'package:calling_app/services/fcm_service.dart';
-import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'dart:developer';
-import 'package:flutter/material.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({ Key? key }) : super(key: key);
+  const MyHomePage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -25,6 +31,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // getFirebaseToken();
     foregroundMode();
     initializeConnectyCube();
+    navigateToCallingPageFromBackground();
     super.initState();
   }
 
@@ -34,7 +41,15 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         fcmToken = token;
       });
-      });
+    });
+    // event.stream.listen((events) {
+    //   print('::::::::::::::::stream value: $events');
+    //   if (events == 1) {
+    //   Future.delayed(Duration(seconds: 0), () {
+    //     navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
+    //   });
+    //   }
+    // });
   }
 
   void foregroundMode() {
@@ -45,6 +60,17 @@ class _MyHomePageState extends State<MyHomePage> {
         initiateCall();
       }
     });
+  }
+
+  Future<void> navigateToCallingPageFromBackground() async {
+    var resp = await FCMService().getStatus();
+    String status = resp['_user']['gender'].toString();
+    log(status);
+    if (status == 'female') {
+      Future.delayed(Duration(seconds: 0), () {
+        navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
+      });
+    }
   }
 
   @override

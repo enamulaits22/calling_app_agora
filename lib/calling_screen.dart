@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:calling_app/config/config.dart';
+import 'package:calling_app/services/fcm_service.dart';
 import 'package:calling_app/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -64,6 +65,7 @@ class _CallingScreenState extends State<CallingScreen> {
     await engine.enableVideo();
     // Join channel with channel name
     await engine.joinChannel(Config.Token, Config.channelName, null, 0);
+    await FCMService().changeStatus('male');
   }
 
 

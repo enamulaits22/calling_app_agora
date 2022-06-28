@@ -1,13 +1,12 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:math' as math;
 import 'package:calling_app/calling_screen.dart';
 import 'package:calling_app/main.dart';
-import 'package:connectycube_sdk/connectycube_sdk.dart';
-import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:calling_app/packages/connectycube_flutter_call_kit-2.0.5/lib/connectycube_flutter_call_kit.dart';
 import 'package:flutter/material.dart';
 
-StreamController<int> event = StreamController();
-
+// StreamController<int> event = StreamController<int>.broadcast();
 void initiateCall() {
   controlCall();
   math.Random random = math.Random();
@@ -35,7 +34,9 @@ void controlCall() {
     //     navigatorKey?.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
     //   });
     // }
-    log(navigatorKey.currentContext.toString());
+    log(':::::::::::::::::::::::::::::::::::::::::');
+    log(navigatorKey.toString());
+    // event.sink.add(1);
     navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
   }
 
