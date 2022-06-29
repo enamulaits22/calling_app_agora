@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'dart:math' as math;
 import 'package:calling_app/calling_screen.dart';
 import 'package:calling_app/main.dart';
-import 'package:calling_app/packages/connectycube_flutter_call_kit-2.0.5/lib/connectycube_flutter_call_kit.dart';
+import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:flutter/material.dart';
 
 // StreamController<int> event = StreamController<int>.broadcast();

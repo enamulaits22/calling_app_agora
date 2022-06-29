@@ -2,7 +2,7 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:calling_app/packages/connectycube_flutter_call_kit-2.0.5/lib/connectycube_flutter_call_kit.dart';
+import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
