@@ -47,6 +47,7 @@ void controlCall() {
     //   });
     // }
     log('hurra:'+navigatorKey.currentState.toString());
+    event.sink.add(1);
 
     navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
   }
@@ -62,7 +63,7 @@ void controlCall() {
 }
 
 Future<void> onCallAcceptedWhenTerminated(CallEvent callEvent) async{
-  event.sink.add(1);
+  //event.sink.add(1);
   navigatorKey.currentState?.push(MaterialPageRoute(builder: (context) => CallingScreen()));
   log(callEvent.callerName);
 }

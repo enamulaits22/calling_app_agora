@@ -4,12 +4,16 @@ import 'package:calling_app/helper/devices.dart';
 import 'package:calling_app/main.dart';
 import 'package:calling_app/services/fcm_service.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:connectycube_sdk/connectycube_whiteboard.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:async';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({ Key? key }) : super(key: key);
+  final bool willGoToVideoCallPage;
+  const MyHomePage({ Key? key, this.willGoToVideoCallPage = true }) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -20,11 +24,32 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
   String? fcmTitle = '';
   FCMService fcmService = FCMService();
   bool _isInForeground = true;
+  static const platform = MethodChannel('samples.flutter.dev/battery');
+
+  // Get battery level.
+  String _batteryLevel = 'Unknown battery level.';
+
+  Future<void> _getBatteryLevel() async {
+    String batteryLevel;
+    try {
+      final int result = await platform.invokeMethod('getBatteryLevel');
+      batteryLevel = 'Battery level at $result % .';
+    } on PlatformException catch (e) {
+      batteryLevel = "Failed to get battery level: '${e.message}'.";
+    }
+
+    setState(() {
+      _batteryLevel = batteryLevel;
+    });
+  }
 
   @override
   void initState() {
     // getFirebaseToken();
 
+    // event.stream.listen((value) {
+    //   log('evant1: '+value.toString());
+    // });
     foregroundMode();
     initializeConnectyCube();
     WidgetsBinding.instance?.addObserver(this);
@@ -43,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
   @override
   void dispose() {
     WidgetsBinding.instance?.removeObserver(this);
+    event.close();
     super.dispose();
   }
 
@@ -56,7 +82,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
   }
 
   void foregroundMode() async{
-    ConnectycubeFlutterCallKit.onCallAcceptedWhenTerminated = onCallAcceptedWhenTerminated;
+    //ConnectycubeFlutterCallKit.onCallAcceptedWhenTerminated = onCallAcceptedWhenTerminated;
     await initiateFirebase();
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
@@ -73,25 +99,34 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
       appBar: AppBar(
         title: Text('Flutter Call App'),
       ),
-      body: Container(
-        child: ListView.builder(
-          itemCount: ListOfDevices.fcmList.length,
-          itemBuilder: (context, index) {
-            final token = ListOfDevices.fcmList[index]['token'].toString();
-            return Center(
-              child: token == fcmToken ? Container() : ElevatedButton(
-                onPressed: () async {
-                  log('tokendfdf' + token);
-                  bool isRequestSuccessful = await fcmService.sendCallRequest('$token');
-                  if (isRequestSuccessful) {
-                    navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
-                  }
-                },
-                child: Text(ListOfDevices.fcmList[index]['name'].toString()),
-              ),
-            );
-          },
-        ),
+      body: Column(
+        children: [
+          ElevatedButton(
+            child: const Text('Get Battery Level'),
+            onPressed: _getBatteryLevel,
+          ),
+          Text(_batteryLevel),
+          Expanded(
+            child: ListView.builder(
+              itemCount: ListOfDevices.fcmList.length,
+              itemBuilder: (context, index) {
+                final token = ListOfDevices.fcmList[index]['token'].toString();
+                return Center(
+                  child: token == fcmToken ? Container() : ElevatedButton(
+                    onPressed: () async {
+                      log('tokendfdf' + token);
+                      bool isRequestSuccessful = await fcmService.sendCallRequest('$token');
+                      if (isRequestSuccessful) {
+                        navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
+                      }
+                    },
+                    child: Text(ListOfDevices.fcmList[index]['name'].toString()),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       )
     );
   }
