@@ -2,16 +2,16 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 import 'package:calling_app/calling_screen.dart';
-import 'package:calling_app/config/setup_call.dart';
+import 'package:calling_app/services/setup_call_service.dart';
 import 'package:calling_app/helper/devices.dart';
 import 'package:calling_app/main.dart';
 import 'package:calling_app/services/fcm_service.dart';
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({
     Key? key,
@@ -42,14 +42,6 @@ class _MyHomePageState extends State<MyHomePage> {
         fcmToken = token;
       });
     });
-    // event.stream.listen((events) {
-    //   print('::::::::::::::::stream value: $events');
-    //   if (events == 1) {
-    //   Future.delayed(Duration(seconds: 0), () {
-    //     navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
-    //   });
-    //   }
-    // });
   }
 
   void foregroundMode() {
@@ -63,10 +55,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> navigateToCallingPageFromBackground() async {
-    var resp = await FCMService().getStatus();
-    String status = resp['_user']['gender'].toString();
-    log(status);
-    if (status == 'female') {
+    final status = await SharedPref.getCallStatus();
+    log(status.toString());
+    if (status.toString() == 'success') {
       Future.delayed(Duration(seconds: 0), () {
         navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
       });
@@ -81,6 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Container(
         child: ListView.builder(
+          shrinkWrap: true,
           itemCount: ListOfDevices.fcmList.length,
           itemBuilder: (context, index) {
             final token = ListOfDevices.fcmList[index]['token'].toString();
