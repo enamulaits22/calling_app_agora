@@ -1,3 +1,4 @@
+import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:calling_app/services/setup_call_service.dart';
 import 'package:calling_app/home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -28,9 +29,10 @@ Future<void> main() async {
 
 /// Top level function to handle incoming messages when the app is in the background
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  initiateCall();
   final service = FlutterBackgroundService();
   service.startService(); //:::::::::::::::::::::::::::starting background service
+  SharedPref.setCallStatus('success');
+  initiateCall();
 }
 
 class MyApp extends StatefulWidget {

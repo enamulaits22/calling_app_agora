@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:math' as math;
 import 'package:calling_app/calling_screen.dart';
+import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:calling_app/main.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 // StreamController<int> event = StreamController<int>.broadcast();
 void initiateCall() {
@@ -42,6 +44,9 @@ void controlCall() {
 
   Future<void> _onCallRejected(CallEvent callEvent) async {
     // the call was rejected
+    final service = FlutterBackgroundService();
+    SharedPref.setCallStatus('reset');
+    service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
   }
   
   ConnectycubeFlutterCallKit.instance.init(

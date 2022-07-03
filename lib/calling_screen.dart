@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
 import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class CallingScreen extends StatefulWidget {
@@ -32,6 +33,8 @@ class _CallingScreenState extends State<CallingScreen> {
 
   // Init the app
   Future<void> initPlatformState() async {
+    final service = FlutterBackgroundService();
+    service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
     SharedPref.setCallStatus('reset');
     if (defaultTargetPlatform == TargetPlatform.android) {
       await [Permission.microphone, Permission.camera].request();

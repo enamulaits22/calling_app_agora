@@ -1,6 +1,4 @@
 import 'dart:ui';
-
-import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
@@ -47,12 +45,10 @@ void onStart(ServiceInstance service) async {
 
   // For flutter prior to version 3.0.0
   // We have to register the plugin manually
-  
-  SharedPref.setCallStatus('success');
 
   if (service is AndroidServiceInstance) {
     // service.on('setAsForeground').listen((event) {
-    //   service.invoke("stopService");
+    //   service.setAsForegroundService();
     // });
 
     service.on('setAsBackground').listen((event) {

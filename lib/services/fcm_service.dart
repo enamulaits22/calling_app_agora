@@ -10,8 +10,8 @@ class FCMService {
       "to": fcmToken,
       "collapse_key": "type_a",
       "notification": {
-        "body": "Body of Your Notification",
-        "title": "Title of Your Notification"
+        "body": "",
+        "title": ""
       },
       "data": {
         "body": "Body of Your Notification in Data",

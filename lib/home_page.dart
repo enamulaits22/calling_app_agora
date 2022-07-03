@@ -30,12 +30,12 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     // getFirebaseToken();
     foregroundMode();
-    initializeConnectyCube();
+    getFcmToken();
     navigateToCallingPageFromBackground();
     super.initState();
   }
 
-  void initializeConnectyCube() {
+  void getFcmToken() {
     ConnectycubeFlutterCallKit.getToken().then((token) {
       log('FCM Token: $token');
       setState(() {
@@ -46,11 +46,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void foregroundMode() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
-      if (notification != null && android != null) {
-        initiateCall();
-      }
+      // RemoteNotification? notification = message.notification;
+      // AndroidNotification? android = message.notification?.android;
+      // if (notification != null && android != null) {
+      //   initiateCall();
+      // }
+      log(':::::::::::::::::::::::::::Triggered from foreground');
+      initiateCall();
     });
   }
 
