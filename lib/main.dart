@@ -1,3 +1,4 @@
+import 'package:calling_app/authentication_page.dart';
 import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:calling_app/services/setup_call_service.dart';
 import 'package:calling_app/home_page.dart';
@@ -56,7 +57,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: AuthenticationPage(),
     );
   }
 }
