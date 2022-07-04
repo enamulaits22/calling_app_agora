@@ -1,21 +1,20 @@
-import 'package:calling_app/main.dart';
-import 'package:calling_app/pages/authentication/signup_page.dart';
 import 'package:calling_app/services/authentication.dart';
 import 'package:calling_app/widgets/app_logo.dart';
 import 'package:calling_app/widgets/custom_text_button.dart';
 import 'package:calling_app/widgets/custom_textfield.dart';
 import 'package:flutter/material.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+class AuthenticationPage extends StatefulWidget {
+  const AuthenticationPage({Key? key}) : super(key: key);
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<AuthenticationPage> createState() => _AuthenticationPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _AuthenticationPageState extends State<AuthenticationPage> {
   TextEditingController emailController = new TextEditingController();
   TextEditingController passwordController = new TextEditingController();
+  bool isPageLogin = true;
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -43,10 +42,18 @@ class _LoginPageState extends State<LoginPage> {
                       textEditingController: passwordController,
                       icon: Icons.lock,
                     ),
-                    CustomTextButton(
+                    isPageLogin ? CustomTextButton(
                       title: 'Login',
                       onTapBtn: (){
                         Authentication.loginUserWithEmailAndPassword(
+                          email: emailController.text,
+                          password: passwordController.text,
+                        );
+                      },
+                    ) : CustomTextButton(
+                      title: 'Sign Up',
+                      onTapBtn: () async {
+                        await Authentication.signUpUserWithEmailAndPassword(
                           email: emailController.text,
                           password: passwordController.text,
                         );
@@ -55,19 +62,24 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(height: 10),
                     InkWell(
                       onTap: () {
-                        navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => SignupPage()));
+                        emailController.clear();
+                        passwordController.clear();
+                        setState(() {
+                          isPageLogin = !isPageLogin;
+                        });
+                        // navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => SignupPage()));
                       },
                       child: RichText(
                         text: TextSpan(
                           children: <TextSpan>[
                             TextSpan(
-                              text: 'Don\'t have an account?',
+                              text: isPageLogin ?'Don\'t have an account?' : 'Already have an account?',
                               style: TextStyle(
                                 color: Colors.grey
                               )
                             ),
                             TextSpan(
-                              text: ' SignUp',
+                              text: isPageLogin ? ' SignUp' : ' Login',
                               style: TextStyle(
                                 color: Colors.blue,
                                 fontWeight: FontWeight.bold,
