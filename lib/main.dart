@@ -1,7 +1,6 @@
-import 'package:calling_app/authentication_page.dart';
 import 'package:calling_app/config/utils/sp_utils.dart';
+import 'package:calling_app/pages/authentication/login_page.dart';
 import 'package:calling_app/services/setup_call_service.dart';
-import 'package:calling_app/home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -57,7 +56,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: AuthenticationPage(),
+      home: LoginPage(),
     );
   }
 }
