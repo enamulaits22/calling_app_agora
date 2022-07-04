@@ -15,9 +15,8 @@ class Authentication {
       );
       log('created account successful');
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Registration Successful"),
+        content: Text("Registration Successful, login please"),
       ));
-      Navigator.of(context).pop();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         log('The password provided is too weak.');
