@@ -45,7 +45,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                     isPageLogin ? CustomTextButton(
                       title: 'Login',
                       onTapBtn: (){
-                        Authentication.loginUserWithEmailAndPassword(
+                        Authentication().loginUserWithEmailAndPassword(
                           email: emailController.text,
                           password: passwordController.text,
                         );

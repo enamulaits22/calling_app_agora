@@ -1,10 +1,15 @@
 import 'dart:developer';
 import 'package:calling_app/home_page.dart';
 import 'package:calling_app/main.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 class Authentication {
+  // Create a CollectionReference called users that references the firestore collection
+  CollectionReference users = FirebaseFirestore.instance.collection('users');
+
   //::::::::::::::::::::::::::::::::::::::::::::::::: SIGN UP
   static Future<void> signUpUserWithEmailAndPassword({required String email, required String password}) async {
     BuildContext context = navigatorKey.currentContext!;
@@ -38,10 +43,15 @@ class Authentication {
   }
 
   //::::::::::::::::::::::::::::::::::::::::::::::::: LOGIN
-  static Future<void> loginUserWithEmailAndPassword({required String email, required String password}) async {
+  Future<void> loginUserWithEmailAndPassword({required String email, required String password}) async {
     BuildContext context = navigatorKey.currentContext!;
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+
+      final fcmToken = await FirebaseMessaging.instance.getToken().then((value) => value);
+
+      await addUser(fcmToken!, email);
+
       navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => MyHomePage()));
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -57,4 +67,17 @@ class Authentication {
       }
     }
   }
+
+  Future<void> addUser(String token, String email) {
+    // Call the user's CollectionReference to add a new user
+    return users
+        .add({
+      'email': email,
+      'token': token,
+      'callingStatus': 'false'
+    })
+        .then((value) => print("User Added"))
+        .catchError((error) => print("Failed to add user: $error"));
+  }
+
 }
