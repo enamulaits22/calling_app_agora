@@ -96,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: ListTile(
                       title: Text(documentSnapshot['email']),
                       subtitle:
-                          Text(documentSnapshot['callingStatus'].toString()),
+                          Text(documentSnapshot['hasReceiverRejectedCall'].toString()),
                       onTap: () async {
                         final token = documentSnapshot['token'];
                         print('tokendfdf' + token);

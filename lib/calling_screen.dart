@@ -40,7 +40,7 @@ class _CallingScreenState extends State<CallingScreen> {
     users.doc(widget.documentsId).snapshots().listen((event) {
       if (event.data() != null) {
         final e = event.data() as Map<String, dynamic>;
-        if (e['callingStatus'] == 'true') {
+        if (e['hasReceiverRejectedCall'] == 'true') {
           _onLeaveChannel();
         }
       }
@@ -201,10 +201,17 @@ class _CallingScreenState extends State<CallingScreen> {
   void _onLeaveChannel() async {
     await engine.leaveChannel();
 
-    //set calling status initial to False
+    //set receiver reject status initial to False
     users
         .doc('${widget.documentsId}')
-        .update({'callingStatus': 'false'})
+        .update({'hasReceiverRejectedCall': 'false'})
+        .then((value) => print("User Added"))
+        .catchError((error) => print("Failed to add user: $error"));
+
+    // caller end call status set to True
+    users
+        .doc('${widget.documentsId}')
+        .update({'hasCallerEndCall': 'true'})
         .then((value) => print("User Added"))
         .catchError((error) => print("Failed to add user: $error"));
 

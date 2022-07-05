@@ -76,7 +76,8 @@ class Authentication {
         .set({
       'email': email,
       'token': token,
-      'callingStatus': 'false'
+      'hasReceiverRejectedCall': 'false',
+      'hasCallerEndCall': 'false'
     })
         .then((value) => print("User Added"))
         .catchError((error) => print("Failed to add user: $error"));

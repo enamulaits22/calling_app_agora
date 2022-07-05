@@ -11,22 +11,36 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 
-// StreamController<int> event = StreamController<int>.broadcast();
-void initiateCall() {
-  controlCall();
-  math.Random random = math.Random();
-  CallEvent callEvent = CallEvent(
-    sessionId: random.nextInt(100).toString(),
-    callType: 1, // {0 :: Audio call}; {1 :: Video Call}
-    callerId: 9644,
-    callerName: 'Caller Name',
-    opponentsIds: {1},
-    userInfo: {'customParameter1': 'value1'},
-  );
+math.Random random = math.Random();
 
-  ConnectycubeFlutterCallKit.instance.updateConfig(ringtone: 'basi_sur', icon: 'app_icon', color: '#07711e');
+CallEvent callEvent = CallEvent(
+  sessionId: random.nextInt(100).toString(),
+  callType: 1, // {0 :: Audio call}; {1 :: Video Call}
+  callerId: 9644,
+  callerName: 'Caller Name',
+  opponentsIds: {1},
+  userInfo: {'customParameter1': 'value1'},
+);
+void initiateCall() {
+  CollectionReference users = FirebaseFirestore.instance.collection('users');
+  controlCall();
+  //ConnectycubeFlutterCallKit.instance.updateConfig(ringtone: 'basi_sur', icon: 'app_icon', color: '#07711e');
   
   ConnectycubeFlutterCallKit.showCallNotification(callEvent);
+  ConnectycubeFlutterCallKit.reportCallEnded(sessionId: callEvent.sessionId);
+
+  final User? _firebaseUser = FirebaseAuth.instance.currentUser;
+
+  users.doc(_firebaseUser!.uid).snapshots().listen((event) {
+    if (event.data() != null) {
+      final e = event.data() as Map<String, dynamic>;
+      print('sdsd sdsd: ${e['hasCallerEndCall']}');
+      if (e['hasCallerEndCall'] == 'true') {
+
+      }
+    }
+  });
+
 }
 
 void controlCall() {
@@ -57,7 +71,7 @@ void controlCall() {
       users
           .doc('${_firebaseUser!.uid}')
           .update({
-        'callingStatus': 'true'
+        'hasReceiverRejectedCall': 'true'
       })
           .then((value) => print("User Added"))
           .catchError((error) => print("Failed to add user: $error"));
