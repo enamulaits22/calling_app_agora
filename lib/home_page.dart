@@ -101,12 +101,15 @@ class _MyHomePageState extends State<MyHomePage> {
                         final token = documentSnapshot['token'];
                         print('tokendfdf' + token);
 
+                        print('documnetsId: ${streamSnapshot.data!.docs[index].id}');
+
                         bool isRequestSuccessful =
                             await fcmService.sendCallRequest('$token');
+
                         if (isRequestSuccessful) {
                           navigatorKey.currentState?.push(
                             MaterialPageRoute(
-                              builder: (_) => CallingScreen(),
+                              builder: (_) => CallingScreen(documentsId: streamSnapshot.data!.docs[index].id),
                             ),
                           );
                         }

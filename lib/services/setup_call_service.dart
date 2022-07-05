@@ -4,7 +4,10 @@ import 'dart:math' as math;
 import 'package:calling_app/calling_screen.dart';
 import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:calling_app/main.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 
@@ -46,6 +49,20 @@ void controlCall() {
     // the call was rejected
     final service = FlutterBackgroundService();
     SharedPref.setCallStatus('reset');
+
+    await Firebase.initializeApp().then((value){
+      CollectionReference users = FirebaseFirestore.instance.collection('users');
+
+      final User? _firebaseUser = FirebaseAuth.instance.currentUser;
+      users
+          .doc('${_firebaseUser!.uid}')
+          .update({
+        'callingStatus': 'true'
+      })
+          .then((value) => print("User Added"))
+          .catchError((error) => print("Failed to add user: $error"));
+    });
+
     service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
   }
   
