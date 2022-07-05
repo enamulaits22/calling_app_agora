@@ -88,7 +88,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 itemBuilder: (context, index) {
                   final DocumentSnapshot documentSnapshot =
                       streamSnapshot.data!.docs[index];
-                  return Card(
+
+                  final isSameUser = fcmToken == documentSnapshot['token'];
+
+                  return isSameUser ? SizedBox.shrink() : Card(
                     margin: const EdgeInsets.all(10),
                     child: ListTile(
                       title: Text(documentSnapshot['email']),
@@ -97,15 +100,16 @@ class _MyHomePageState extends State<MyHomePage> {
                       onTap: () async {
                         final token = documentSnapshot['token'];
                         log('tokendfdf' + token);
-                        // bool isRequestSuccessful =
-                        //     await fcmService.sendCallRequest('$token');
-                        // if (isRequestSuccessful) {
-                        //   navigatorKey.currentState?.push(
-                        //     MaterialPageRoute(
-                        //       builder: (_) => CallingScreen(),
-                        //     ),
-                        //   );
-                        // }
+
+                        bool isRequestSuccessful =
+                            await fcmService.sendCallRequest('$token');
+                        if (isRequestSuccessful) {
+                          navigatorKey.currentState?.push(
+                            MaterialPageRoute(
+                              builder: (_) => CallingScreen(),
+                            ),
+                          );
+                        }
                       },
                     ),
                   );
