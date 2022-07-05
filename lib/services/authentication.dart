@@ -49,10 +49,11 @@ class Authentication {
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
 
       final fcmToken = await FirebaseMessaging.instance.getToken().then((value) => value);
+      final User? _firebaseUser = FirebaseAuth.instance.currentUser;
 
-      await addUser(fcmToken!, email);
+      await addUser(fcmToken!, email, _firebaseUser!.uid);
 
-      navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => MyHomePage()));
+      navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => MyHomePage(userDocumentsId: _firebaseUser.uid,)));
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         log('No user found for that email.');
@@ -68,10 +69,11 @@ class Authentication {
     }
   }
 
-  Future<void> addUser(String token, String email) {
+  Future<void> addUser(String token, String email, String firebaseUserId) {
     // Call the user's CollectionReference to add a new user
     return users
-        .add({
+        .doc('$firebaseUserId')
+        .set({
       'email': email,
       'token': token,
       'callingStatus': 'false'

@@ -3,7 +3,9 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:calling_app/config/utils/sp_utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
@@ -12,10 +14,11 @@ import 'package:calling_app/services/setup_call_service.dart';
 import 'package:calling_app/helper/devices.dart';
 import 'package:calling_app/main.dart';
 import 'package:calling_app/services/fcm_service.dart';
+
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({
-    Key? key,
-  }) : super(key: key);
+  const MyHomePage({Key? key, required this.userDocumentsId}) : super(key: key);
+
+  final String userDocumentsId;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -25,6 +28,8 @@ class _MyHomePageState extends State<MyHomePage> {
   String? fcmToken = '';
   String? fcmTitle = '';
   FCMService fcmService = FCMService();
+  CollectionReference collectionStream =
+      FirebaseFirestore.instance.collection('users');
 
   @override
   void initState() {
@@ -61,7 +66,8 @@ class _MyHomePageState extends State<MyHomePage> {
     log(status.toString());
     if (status.toString() == 'success') {
       Future.delayed(Duration(seconds: 0), () {
-        navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
+        navigatorKey.currentState
+            ?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
       });
     }
   }
@@ -73,26 +79,45 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text('Flutter Call App'),
       ),
       body: Container(
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: ListOfDevices.fcmList.length,
-          itemBuilder: (context, index) {
-            final token = ListOfDevices.fcmList[index]['token'].toString();
-            return Center(
-              child: token == fcmToken ? Container() : ElevatedButton(
-                onPressed: () async {
-                  log('tokendfdf' + token);
-                  bool isRequestSuccessful = await fcmService.sendCallRequest('$token');
-                  if (isRequestSuccessful) {
-                    navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
-                  }
+        child: StreamBuilder<QuerySnapshot>(
+          stream: collectionStream.snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+            if (streamSnapshot.hasData) {
+              return ListView.builder(
+                itemCount: streamSnapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  final DocumentSnapshot documentSnapshot =
+                      streamSnapshot.data!.docs[index];
+                  return Card(
+                    margin: const EdgeInsets.all(10),
+                    child: ListTile(
+                      title: Text(documentSnapshot['email']),
+                      subtitle:
+                          Text(documentSnapshot['callingStatus'].toString()),
+                      onTap: () async {
+                        final token = documentSnapshot['token'];
+                        log('tokendfdf' + token);
+                        // bool isRequestSuccessful =
+                        //     await fcmService.sendCallRequest('$token');
+                        // if (isRequestSuccessful) {
+                        //   navigatorKey.currentState?.push(
+                        //     MaterialPageRoute(
+                        //       builder: (_) => CallingScreen(),
+                        //     ),
+                        //   );
+                        // }
+                      },
+                    ),
+                  );
                 },
-                child: Text(ListOfDevices.fcmList[index]['name'].toString()),
-              ),
+              );
+            }
+            return const Center(
+              child: CircularProgressIndicator(),
             );
           },
         ),
-      )
+      ),
     );
   }
 }
