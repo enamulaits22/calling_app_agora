@@ -99,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           Text(documentSnapshot['callingStatus'].toString()),
                       onTap: () async {
                         final token = documentSnapshot['token'];
-                        log('tokendfdf' + token);
+                        print('tokendfdf' + token);
 
                         bool isRequestSuccessful =
                             await fcmService.sendCallRequest('$token');
