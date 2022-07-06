@@ -11,6 +11,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 
 import 'dart:async';
 
+import 'config/config.dart';
 import 'services/setup_background_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -35,7 +36,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   final service = FlutterBackgroundService();
   service
       .startService(); //:::::::::::::::::::::::::::starting background service
-  SharedPref.setCallStatus('success');
+  SharedPref.saveValueToShaprf(Config.callStatus,'success');
+  initiateCall();
 
   await Firebase.initializeApp().then((value){
     CollectionReference users = FirebaseFirestore.instance.collection('users');
@@ -45,7 +47,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     });
   });
 
-  initiateCall();
 }
 
 class MyApp extends StatefulWidget {

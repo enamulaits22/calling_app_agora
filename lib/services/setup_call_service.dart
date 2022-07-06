@@ -11,13 +11,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 
+import '../config/config.dart';
+
 
 
 void initiateCall() {
-  // the call was rejected
-  final service = FlutterBackgroundService();
-
-  CollectionReference users = FirebaseFirestore.instance.collection('users');
   controlCall();
 
   math.Random random = math.Random();
@@ -34,6 +32,11 @@ void initiateCall() {
 
   ConnectycubeFlutterCallKit.showCallNotification(callEvent);
 
+  // the call was rejected
+  final service = FlutterBackgroundService();
+
+  CollectionReference users = FirebaseFirestore.instance.collection('users');
+
   Firebase.initializeApp().then((value) {
 
     final User? _firebaseUser = FirebaseAuth.instance.currentUser;
@@ -42,19 +45,21 @@ void initiateCall() {
       if (event.data() != null) {
         final e = event.data() as Map<String, dynamic>;
         print('sdsd sdsd: ${e['hasCallerEndCall']}');
+
+        //check if Receiver's hasCallerEndCall value
         if (e['hasCallerEndCall'] == 'true') {
           ConnectycubeFlutterCallKit.reportCallEnded(
               sessionId: callEvent.sessionId);
 
           Future.delayed(Duration(seconds: 1), (){
-            //reset Caller end call initial status set to False
+            //reset Receiver's hasCallerEndCall initial status set to False
             users
                 .doc('${_firebaseUser.uid}')
                 .update({'hasCallerEndCall': 'false'})
                 .then((value) => print("User Added"))
                 .catchError((error) => print("Failed to add user: $error"));
 
-            SharedPref.setCallStatus('reset');
+            SharedPref.saveValueToShaprf(Config.callStatus,'reset');
             service.invoke(
                 "stopService"); //:::::::::::::::::::::::::::stopped background service
 
@@ -87,7 +92,7 @@ void controlCall() {
   Future<void> _onCallRejected(CallEvent callEvent) async {
     // the call was rejected
     final service = FlutterBackgroundService();
-    SharedPref.setCallStatus('reset');
+    SharedPref.saveValueToShaprf(Config.callStatus,'reset');
 
     await Firebase.initializeApp().then((value) {
       CollectionReference users =

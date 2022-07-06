@@ -54,7 +54,7 @@ class _CallingScreenState extends State<CallingScreen> {
     final service = FlutterBackgroundService();
     service.invoke(
         "stopService"); //:::::::::::::::::::::::::::stopped background service
-    SharedPref.setCallStatus('reset');
+    SharedPref.saveValueToShaprf(Config.callStatus,'reset');
     if (defaultTargetPlatform == TargetPlatform.android) {
       await [Permission.microphone, Permission.camera].request();
     }

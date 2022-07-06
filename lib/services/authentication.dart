@@ -6,6 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
+import '../config/config.dart';
+import '../config/utils/sp_utils.dart';
+
 class Authentication {
   // Create a CollectionReference called users that references the firestore collection
   CollectionReference users = FirebaseFirestore.instance.collection('users');
@@ -52,6 +55,8 @@ class Authentication {
       final User? _firebaseUser = FirebaseAuth.instance.currentUser;
 
       await addUser(fcmToken!, email, _firebaseUser!.uid);
+
+      SharedPref.saveValueToShaprf(Config.userEmail, email);
 
       navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => MyHomePage(userDocumentsId: _firebaseUser.uid,)));
     } on FirebaseAuthException catch (e) {

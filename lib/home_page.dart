@@ -15,6 +15,8 @@ import 'package:calling_app/helper/devices.dart';
 import 'package:calling_app/main.dart';
 import 'package:calling_app/services/fcm_service.dart';
 
+import 'config/config.dart';
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.userDocumentsId}) : super(key: key);
 
@@ -30,6 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
   FCMService fcmService = FCMService();
   CollectionReference collectionStream =
       FirebaseFirestore.instance.collection('users');
+  late String userEmail;
 
   @override
   void initState() {
@@ -40,7 +43,9 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
-  void getFcmToken() {
+  void getFcmToken() async{
+     userEmail = (await SharedPref.getValueFromShrprs(Config.userEmail,))!;
+
     ConnectycubeFlutterCallKit.getToken().then((token) {
       log('FCM Token: $token');
       setState(() {
@@ -62,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> navigateToCallingPageFromBackground() async {
-    final status = await SharedPref.getCallStatus();
+    final status = await SharedPref.getValueFromShrprs(Config.callStatus,);
     log(status.toString());
     if (status.toString() == 'success') {
       Future.delayed(Duration(seconds: 0), () {
@@ -89,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   final DocumentSnapshot documentSnapshot =
                       streamSnapshot.data!.docs[index];
 
-                  final isSameUser = fcmToken == documentSnapshot['token'];
+                  final isSameUser = userEmail == documentSnapshot['email'];
 
                   return isSameUser ? SizedBox.shrink() : Card(
                     margin: const EdgeInsets.all(10),
