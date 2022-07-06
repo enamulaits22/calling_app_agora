@@ -37,6 +37,10 @@ class _CallingScreenState extends State<CallingScreen> {
 
     users = FirebaseFirestore.instance.collection('users');
 
+    Future.delayed(Duration(seconds: 30), (){
+      _onLeaveChannel();
+    });
+
     users.doc(widget.documentsId).snapshots().listen((event) {
       if (event.data() != null) {
         final e = event.data() as Map<String, dynamic>;

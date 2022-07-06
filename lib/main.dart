@@ -31,7 +31,7 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
-/// Top level function to handle incoming messages when the app is in the background
+/// Top level function to handle incoming call when the app is in the background
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   final service = FlutterBackgroundService();
   service

@@ -33,6 +33,11 @@ void initiateCall() {
   ConnectycubeFlutterCallKit.showCallNotification(callEvent);
 
   // the call was rejected
+  rejectCallFromFirebaseAndUpdateFireStore(callEvent);
+}
+
+void rejectCallFromFirebaseAndUpdateFireStore(CallEvent callEvent) {
+   // the call was rejected
   final service = FlutterBackgroundService();
 
   CollectionReference users = FirebaseFirestore.instance.collection('users');
