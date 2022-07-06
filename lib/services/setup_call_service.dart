@@ -11,36 +11,60 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 
-math.Random random = math.Random();
 
-CallEvent callEvent = CallEvent(
-  sessionId: random.nextInt(100).toString(),
-  callType: 1, // {0 :: Audio call}; {1 :: Video Call}
-  callerId: 9644,
-  callerName: 'Caller Name',
-  opponentsIds: {1},
-  userInfo: {'customParameter1': 'value1'},
-);
+
 void initiateCall() {
+  // the call was rejected
+  final service = FlutterBackgroundService();
+
   CollectionReference users = FirebaseFirestore.instance.collection('users');
   controlCall();
-  //ConnectycubeFlutterCallKit.instance.updateConfig(ringtone: 'basi_sur', icon: 'app_icon', color: '#07711e');
-  
+
+  math.Random random = math.Random();
+
+  CallEvent callEvent = CallEvent(
+    sessionId: random.nextInt(100).toString(),
+    callType: 1,
+    // {0 :: Audio call}; {1 :: Video Call}
+    callerId: 9644,
+    callerName: 'Caller Name',
+    opponentsIds: {1},
+    userInfo: {'customParameter1': 'value1'},
+  );
+
   ConnectycubeFlutterCallKit.showCallNotification(callEvent);
-  ConnectycubeFlutterCallKit.reportCallEnded(sessionId: callEvent.sessionId);
 
-  final User? _firebaseUser = FirebaseAuth.instance.currentUser;
+  Firebase.initializeApp().then((value) {
 
-  users.doc(_firebaseUser!.uid).snapshots().listen((event) {
-    if (event.data() != null) {
-      final e = event.data() as Map<String, dynamic>;
-      print('sdsd sdsd: ${e['hasCallerEndCall']}');
-      if (e['hasCallerEndCall'] == 'true') {
+    final User? _firebaseUser = FirebaseAuth.instance.currentUser;
 
+    users.doc(_firebaseUser!.uid).snapshots().listen((event) {
+      if (event.data() != null) {
+        final e = event.data() as Map<String, dynamic>;
+        print('sdsd sdsd: ${e['hasCallerEndCall']}');
+        if (e['hasCallerEndCall'] == 'true') {
+          ConnectycubeFlutterCallKit.reportCallEnded(
+              sessionId: callEvent.sessionId);
+
+          Future.delayed(Duration(seconds: 1), (){
+            //reset Caller end call initial status set to False
+            users
+                .doc('${_firebaseUser.uid}')
+                .update({'hasCallerEndCall': 'false'})
+                .then((value) => print("User Added"))
+                .catchError((error) => print("Failed to add user: $error"));
+
+            SharedPref.setCallStatus('reset');
+            service.invoke(
+                "stopService"); //:::::::::::::::::::::::::::stopped background service
+
+          });
+
+        }
       }
-    }
-  });
+    });
 
+  });
 }
 
 void controlCall() {
@@ -56,7 +80,8 @@ void controlCall() {
     log(':::::::::::::::::::::::::::::::::::::::::');
     log(navigatorKey.toString());
     // event.sink.add(1);
-    navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
+    navigatorKey.currentState
+        ?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
   }
 
   Future<void> _onCallRejected(CallEvent callEvent) async {
@@ -64,22 +89,22 @@ void controlCall() {
     final service = FlutterBackgroundService();
     SharedPref.setCallStatus('reset');
 
-    await Firebase.initializeApp().then((value){
-      CollectionReference users = FirebaseFirestore.instance.collection('users');
+    await Firebase.initializeApp().then((value) {
+      CollectionReference users =
+          FirebaseFirestore.instance.collection('users');
 
       final User? _firebaseUser = FirebaseAuth.instance.currentUser;
       users
           .doc('${_firebaseUser!.uid}')
-          .update({
-        'hasReceiverRejectedCall': 'true'
-      })
+          .update({'hasReceiverRejectedCall': 'true'})
           .then((value) => print("User Added"))
           .catchError((error) => print("Failed to add user: $error"));
     });
 
-    service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
+    service.invoke(
+        "stopService"); //:::::::::::::::::::::::::::stopped background service
   }
-  
+
   ConnectycubeFlutterCallKit.instance.init(
     onCallAccepted: _onCallAccepted,
     onCallRejected: _onCallRejected,
