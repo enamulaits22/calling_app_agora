@@ -25,9 +25,10 @@ class CallingScreen extends StatefulWidget {
 // App state class
 class _CallingScreenState extends State<CallingScreen> {
   bool _joined = false;
-  int _remoteUid = 0;
+  int _remoteUid = 0; //remote user hasn't joined yet
   bool _switch = false;
   bool isMutedAudio = false;
+  bool isMutedVideo = false;
   late RtcEngine engine;
   late CollectionReference users;
   late Timer timer;
@@ -77,7 +78,7 @@ class _CallingScreenState extends State<CallingScreen> {
       timer.cancel();
       log('userJoined ${uid}');
       setState(() {
-        _remoteUid = uid;
+        _remoteUid = uid; //remote user has joined
         _switch = true;
       });
     }, userOffline: (int uid, UserOfflineReason reason) {
@@ -103,7 +104,7 @@ class _CallingScreenState extends State<CallingScreen> {
       body: Stack(
         children: [
           Center(
-            child: _switch ? _renderRemoteVideo() : _renderLocalPreview(),
+            child: _switch && _remoteUid !=0 ? _renderRemoteVideo() : _renderLocalPreview(),
           ),
           Align(
             alignment: Alignment.topRight,
@@ -118,7 +119,7 @@ class _CallingScreenState extends State<CallingScreen> {
                   });
                 },
                 child: Center(
-                  child: _switch ? _renderLocalPreview() : _renderRemoteVideo(),
+                  child: _switch  && _remoteUid !=0 ? _renderLocalPreview() : _renderRemoteVideo(),
                 ),
               ),
             ),
@@ -143,6 +144,13 @@ class _CallingScreenState extends State<CallingScreen> {
                     iconColor: Colors.white,
                     iconSize: 30,
                     onTapBtn: _onLeaveChannel,
+                  ),
+                  CustomButton(
+                    icon: !isMutedVideo ? Icons.videocam : Icons.videocam_off,
+                    fillColor: Colors.white,
+                    iconColor: Colors.blue,
+                    iconSize: 18,
+                    onTapBtn: _onToggleMuteVideo,
                   ),
                   CustomButton(
                     icon: Icons.switch_camera,
@@ -235,5 +243,13 @@ class _CallingScreenState extends State<CallingScreen> {
       isMutedAudio = !isMutedAudio;
     });
     await engine.muteLocalAudioStream(isMutedAudio);
+  }
+  
+  //Enable and Disable video
+  void _onToggleMuteVideo() async {
+    setState(() {
+      isMutedVideo = !isMutedVideo;
+    });
+    await engine.muteLocalVideoStream(isMutedVideo);
   }
 }
