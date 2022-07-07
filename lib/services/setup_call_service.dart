@@ -79,17 +79,7 @@ void rejectCallFromFirebaseAndUpdateFireStore(CallEvent callEvent) {
 
 void controlCall() {
   Future<void> _onCallAccepted(CallEvent callEvent) async {
-    // bool res = await DeviceApps.openApp('com.example.calling_app');
-    // print(res.toString());
 
-    // if (res) {
-    //   Future.delayed(Duration(seconds: 2), (){
-    //     navigatorKey?.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
-    //   });
-    // }
-    log(':::::::::::::::::::::::::::::::::::::::::');
-    log(navigatorKey.toString());
-    // event.sink.add(1);
     navigatorKey.currentState
         ?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
   }

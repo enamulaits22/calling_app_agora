@@ -30,16 +30,17 @@ class _CallingScreenState extends State<CallingScreen> {
   bool isMutedAudio = false;
   late RtcEngine engine;
   late CollectionReference users;
+  late Timer timer;
 
   @override
   void initState() {
     super.initState();
 
-    users = FirebaseFirestore.instance.collection('users');
-
-    Future.delayed(Duration(seconds: 30), (){
+    timer = Timer(Duration(seconds: 10), () {
       _onLeaveChannel();
     });
+
+    users = FirebaseFirestore.instance.collection('users');
 
     users.doc(widget.documentsId).snapshots().listen((event) {
       if (event.data() != null) {
@@ -53,12 +54,11 @@ class _CallingScreenState extends State<CallingScreen> {
     initPlatformState();
   }
 
-  // Init the app
   Future<void> initPlatformState() async {
     final service = FlutterBackgroundService();
     service.invoke(
         "stopService"); //:::::::::::::::::::::::::::stopped background service
-    SharedPref.saveValueToShaprf(Config.callStatus,'reset');
+    SharedPref.saveValueToShaprf(Config.callStatus, 'reset');
     if (defaultTargetPlatform == TargetPlatform.android) {
       await [Permission.microphone, Permission.camera].request();
     }
@@ -74,6 +74,7 @@ class _CallingScreenState extends State<CallingScreen> {
         _joined = true;
       });
     }, userJoined: (int uid, int elapsed) {
+      timer.cancel();
       log('userJoined ${uid}');
       setState(() {
         _remoteUid = uid;
@@ -203,6 +204,7 @@ class _CallingScreenState extends State<CallingScreen> {
 
   //Leave channel
   void _onLeaveChannel() async {
+    log("lolol");
     await engine.leaveChannel();
 
     //set receiver reject status initial to False
