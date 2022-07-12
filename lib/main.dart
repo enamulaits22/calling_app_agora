@@ -33,11 +33,12 @@ Future<void> main() async {
 
 /// Top level function to handle incoming call when the app is in the background
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  String? callerName = message.notification!.title;
   final service = FlutterBackgroundService();
-  service
-      .startService(); //:::::::::::::::::::::::::::starting background service
-  SharedPref.saveValueToShaprf(Config.callStatus,'success');
-  initiateCall();
+  service.startService(); //:::::::::::::::::::::::::::starting background service
+  SharedPref.saveValueToShaprf(Config.callStatus, 'success');
+  SharedPref.saveValueToShaprf(Config.callerName, callerName!);
+  initiateCall(callerName);
 
   await Firebase.initializeApp().then((value){
     CollectionReference users = FirebaseFirestore.instance.collection('users');
@@ -60,8 +61,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    service.invoke(
-        "stopService"); //:::::::::::::::::::::::::::stopped background service
+    service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
     super.initState();
   }
 
@@ -75,8 +75,8 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
       ),
       home: _firebaseUser?.uid != null
-          ? MyHomePage(userDocumentsId: _firebaseUser!.uid)
-          : AuthenticationPage(),
+        ? MyHomePage(userDocumentsId: _firebaseUser!.uid)
+        : AuthenticationPage(),
     );
   }
 }

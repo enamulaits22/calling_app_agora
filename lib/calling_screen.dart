@@ -15,8 +15,13 @@ import 'package:permission_handler/permission_handler.dart';
 
 class CallingScreen extends StatefulWidget {
   final String? documentsId;
+  final String userName;
 
-  const CallingScreen({Key? key, this.documentsId}) : super(key: key);
+  const CallingScreen({
+    Key? key,
+    this.documentsId,
+    required this.userName,
+  }) : super(key: key);
 
   @override
   _CallingScreenState createState() => _CallingScreenState();
@@ -31,13 +36,13 @@ class _CallingScreenState extends State<CallingScreen> {
   bool isMutedVideo = false;
   late RtcEngine engine;
   late CollectionReference users;
-  late Timer timer;
+  late Timer timerToleaveChaneel;
 
   @override
   void initState() {
     super.initState();
 
-    timer = Timer(Duration(seconds: 10), () {
+    timerToleaveChaneel = Timer(Duration(seconds: 10), () {
       _onLeaveChannel();
     });
 
@@ -57,8 +62,7 @@ class _CallingScreenState extends State<CallingScreen> {
 
   Future<void> initPlatformState() async {
     final service = FlutterBackgroundService();
-    service.invoke(
-        "stopService"); //:::::::::::::::::::::::::::stopped background service
+    service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
     SharedPref.saveValueToShaprf(Config.callStatus, 'reset');
     if (defaultTargetPlatform == TargetPlatform.android) {
       await [Permission.microphone, Permission.camera].request();
@@ -75,7 +79,7 @@ class _CallingScreenState extends State<CallingScreen> {
         _joined = true;
       });
     }, userJoined: (int uid, int elapsed) {
-      timer.cancel();
+      timerToleaveChaneel.cancel();
       log('userJoined ${uid}');
       setState(() {
         _remoteUid = uid; //remote user has joined
@@ -98,72 +102,99 @@ class _CallingScreenState extends State<CallingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Agora Call'),
-      ),
-      body: Stack(
-        children: [
-          Center(
-            child: _switch && _remoteUid !=0 ? _renderRemoteVideo() : _renderLocalPreview(),
-          ),
-          Align(
-            alignment: Alignment.topRight,
-            child: Container(
-              width: 100,
-              height: 100,
-              color: Colors.blue,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _switch = !_switch;
-                  });
-                },
-                child: Center(
-                  child: _switch  && _remoteUid !=0 ? _renderLocalPreview() : _renderRemoteVideo(),
+      // appBar: AppBar(
+      //   title: const Text('Agora Call'),
+      // ),
+      body: Padding(
+        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+        child: Stack(
+          children: [
+            Center(
+              child: _switch && _remoteUid !=0 ? _renderRemoteVideo() : _renderLocalPreview(),
+            ),
+            Align(
+              alignment: Alignment.topRight,
+              child: Container(
+                width: 100,
+                height: 100,
+                color: Colors.blue,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _switch = !_switch;
+                    });
+                  },
+                  child: Center(
+                    child: _switch  && _remoteUid !=0 ? _renderLocalPreview() : _renderRemoteVideo(),
+                  ),
                 ),
               ),
             ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 40.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CustomButton(
-                    icon: !isMutedAudio ? Icons.mic : Icons.mic_off,
-                    fillColor: Colors.white,
-                    iconColor: Colors.blue,
-                    iconSize: 18,
-                    onTapBtn: _onToggleMuteAudio,
+             _remoteUid !=0 ? Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.2),
                   ),
-                  CustomButton(
-                    icon: Icons.call_end,
-                    fillColor: Colors.red,
-                    iconColor: Colors.white,
-                    iconSize: 30,
-                    onTapBtn: _onLeaveChannel,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.userName,
+                        style: TextStyle(fontSize: 22, color: Colors.white),
+                      ),
+                      Text(
+                        '05:10',
+                        style: TextStyle(fontSize: 22, color: Colors.white),
+                      ),
+                    ],
                   ),
-                  CustomButton(
-                    icon: !isMutedVideo ? Icons.videocam : Icons.videocam_off,
-                    fillColor: Colors.white,
-                    iconColor: Colors.blue,
-                    iconSize: 18,
-                    onTapBtn: _onToggleMuteVideo,
-                  ),
-                  CustomButton(
-                    icon: Icons.switch_camera,
-                    fillColor: Colors.white,
-                    iconColor: Colors.blue,
-                    iconSize: 18,
-                    onTapBtn: _onSwitchCamera,
-                  ),
-                ],
+                ),
+              ),
+            ) : SizedBox.shrink(),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 40.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CustomButton(
+                      icon: !isMutedAudio ? Icons.mic : Icons.mic_off,
+                      fillColor: Colors.white,
+                      iconColor: Colors.blue,
+                      iconSize: 18,
+                      onTapBtn: _onToggleMuteAudio,
+                    ),
+                    CustomButton(
+                      icon: Icons.call_end,
+                      fillColor: Colors.red,
+                      iconColor: Colors.white,
+                      iconSize: 30,
+                      onTapBtn: _onLeaveChannel,
+                    ),
+                    CustomButton(
+                      icon: !isMutedVideo ? Icons.videocam : Icons.videocam_off,
+                      fillColor: Colors.white,
+                      iconColor: Colors.blue,
+                      iconSize: 18,
+                      onTapBtn: _onToggleMuteVideo,
+                    ),
+                    CustomButton(
+                      icon: Icons.switch_camera,
+                      fillColor: Colors.white,
+                      iconColor: Colors.blue,
+                      iconSize: 18,
+                      onTapBtn: _onSwitchCamera,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

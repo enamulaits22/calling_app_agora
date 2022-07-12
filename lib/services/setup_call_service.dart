@@ -15,8 +15,8 @@ import '../config/config.dart';
 
 
 
-void initiateCall() {
-  controlCall();
+void initiateCall(String callerName) {
+  controlCall(callerName);
 
   math.Random random = math.Random();
 
@@ -25,7 +25,7 @@ void initiateCall() {
     callType: 1,
     // {0 :: Audio call}; {1 :: Video Call}
     callerId: 9644,
-    callerName: 'Caller Name',
+    callerName: callerName,
     opponentsIds: {1},
     userInfo: {'customParameter1': 'value1'},
   );
@@ -48,13 +48,12 @@ void rejectCallFromFirebaseAndUpdateFireStore(CallEvent callEvent) {
 
     users.doc(_firebaseUser!.uid).snapshots().listen((event) {
       if (event.data() != null) {
-        final e = event.data() as Map<String, dynamic>;
-        print('sdsd sdsd: ${e['hasCallerEndCall']}');
+        final data = event.data() as Map<String, dynamic>;
+        print('sdsd sdsd: ${data['hasCallerEndCall']}');
 
         //check if Receiver's hasCallerEndCall value
-        if (e['hasCallerEndCall'] == 'true') {
-          ConnectycubeFlutterCallKit.reportCallEnded(
-              sessionId: callEvent.sessionId);
+        if (data['hasCallerEndCall'] == 'true') {
+          ConnectycubeFlutterCallKit.reportCallEnded(sessionId: callEvent.sessionId);
 
           Future.delayed(Duration(seconds: 1), (){
             //reset Receiver's hasCallerEndCall initial status set to False
@@ -65,8 +64,7 @@ void rejectCallFromFirebaseAndUpdateFireStore(CallEvent callEvent) {
                 .catchError((error) => print("Failed to add user: $error"));
 
             SharedPref.saveValueToShaprf(Config.callStatus,'reset');
-            service.invoke(
-                "stopService"); //:::::::::::::::::::::::::::stopped background service
+            service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
 
           });
 
@@ -77,11 +75,12 @@ void rejectCallFromFirebaseAndUpdateFireStore(CallEvent callEvent) {
   });
 }
 
-void controlCall() {
+void controlCall(String callerName) {
   Future<void> _onCallAccepted(CallEvent callEvent) async {
 
-    navigatorKey.currentState
-        ?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(builder: (_) => CallingScreen(userName: callerName,)),
+    );
   }
 
   Future<void> _onCallRejected(CallEvent callEvent) async {
@@ -101,8 +100,7 @@ void controlCall() {
           .catchError((error) => print("Failed to add user: $error"));
     });
 
-    service.invoke(
-        "stopService"); //:::::::::::::::::::::::::::stopped background service
+    service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
   }
 
   ConnectycubeFlutterCallKit.instance.init(

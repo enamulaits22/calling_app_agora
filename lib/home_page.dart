@@ -5,13 +5,11 @@ import 'dart:developer';
 import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 import 'package:calling_app/calling_screen.dart';
 import 'package:calling_app/services/setup_call_service.dart';
-import 'package:calling_app/helper/devices.dart';
 import 'package:calling_app/main.dart';
 import 'package:calling_app/services/fcm_service.dart';
 
@@ -30,8 +28,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String? fcmToken = '';
   String? fcmTitle = '';
   FCMService fcmService = FCMService();
-  CollectionReference collectionStream =
-      FirebaseFirestore.instance.collection('users');
+  CollectionReference collectionStream = FirebaseFirestore.instance.collection('users');
   late String userEmail;
 
   @override
@@ -62,17 +59,18 @@ class _MyHomePageState extends State<MyHomePage> {
       //   initiateCall();
       // }
       log(':::::::::::::::::::::::::::Triggered from foreground');
-      initiateCall();
+      String userName = message.notification!.title!;
+      initiateCall(userName);
     });
   }
 
   Future<void> navigateToCallingPageFromBackground() async {
-    final status = await SharedPref.getValueFromShrprs(Config.callStatus,);
+    final status = await SharedPref.getValueFromShrprs(Config.callStatus);
+    final callerName = await SharedPref.getValueFromShrprs(Config.callerName);
     log(status.toString());
     if (status.toString() == 'success') {
       Future.delayed(Duration(seconds: 0), () {
-        navigatorKey.currentState
-            ?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
+        navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => CallingScreen(userName: callerName!)));
       });
     }
   }
@@ -91,8 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
               return ListView.builder(
                 itemCount: streamSnapshot.data!.docs.length,
                 itemBuilder: (context, index) {
-                  final DocumentSnapshot documentSnapshot =
-                      streamSnapshot.data!.docs[index];
+                  final DocumentSnapshot documentSnapshot = streamSnapshot.data!.docs[index];
 
                   final isSameUser = userEmail == documentSnapshot['email'];
 
@@ -100,21 +97,24 @@ class _MyHomePageState extends State<MyHomePage> {
                     margin: const EdgeInsets.all(10),
                     child: ListTile(
                       title: Text(documentSnapshot['email']),
-                      subtitle:
-                          Text(documentSnapshot['hasReceiverRejectedCall'].toString()),
+                      subtitle: Text(documentSnapshot['hasReceiverRejectedCall'].toString()),
                       onTap: () async {
                         final token = documentSnapshot['token'];
                         print('tokendfdf' + token);
-
                         print('documnetsId: ${streamSnapshot.data!.docs[index].id}');
-
-                        bool isRequestSuccessful =
-                            await fcmService.sendCallRequest('$token');
+                        
+                        bool isRequestSuccessful = await fcmService.sendCallRequest(
+                          fcmToken: '$token',
+                          callerName: userEmail,
+                        );
 
                         if (isRequestSuccessful) {
                           navigatorKey.currentState?.push(
                             MaterialPageRoute(
-                              builder: (_) => CallingScreen(documentsId: streamSnapshot.data!.docs[index].id),
+                              builder: (_) => CallingScreen(
+                                documentsId: documentSnapshot.id,
+                                userName: documentSnapshot['email'],
+                              ),
                             ),
                           );
                         }
