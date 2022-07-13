@@ -2,7 +2,7 @@ import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:calling_app/home_page.dart';
 import 'package:calling_app/pages/authentication/login_page.dart';
 import 'package:calling_app/services/setup_call_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -40,13 +40,13 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   SharedPref.saveValueToShaprf(Config.callerName, callerName!);
   initiateCall(callerName);
 
-  await Firebase.initializeApp().then((value){
-    CollectionReference users = FirebaseFirestore.instance.collection('users');
-    users.doc('d0Wj8uWrL1fvwos7umA55sfWxET2').get().then((value){
-      final e = value.data() as Map<String, dynamic>;
-      print('sdsd: ${e['email']}');
-    });
-  });
+  // await Firebase.initializeApp().then((value){
+  //   CollectionReference users = FirebaseFirestore.instance.collection('users');
+  //   users.doc('d0Wj8uWrL1fvwos7umA55sfWxET2').get().then((value){
+  //     final e = value.data() as Map<String, dynamic>;
+  //     print('sdsd: ${e['email']}');
+  //   });
+  // });
 
 }
 

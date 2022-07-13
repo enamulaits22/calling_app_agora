@@ -1,7 +1,7 @@
 class Config {
   Config._();
   static String APP_ID = '46f98f952b5f4a608f651d43fdf47cd9';
-  static String Token = '00646f98f952b5f4a608f651d43fdf47cd9IADnVcH2x0PUHq5ttgGRvtNC7w8Kksw5HJAyWQsyDP0eNnG6sh0AAAAAEAAh21UY9DfOYgEAAQD0N85i';
+  static String Token = '00646f98f952b5f4a608f651d43fdf47cd9IAC9VY2jlOYoR6UTQdQoUdv0CtFYLwZ/uIGb758vtzEj+HG6sh0AAAAAEAAh21UY5orPYgEAAQDmis9i';
   static String channelName = 'audacitycall';
 
   /******************************* Sahred Preference Keys *******************************/

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:developer';
+// import 'dart:developer';
 import 'dart:math' as math;
 import 'package:calling_app/calling_screen.dart';
 import 'package:calling_app/config/utils/sp_utils.dart';
@@ -60,7 +60,7 @@ void rejectCallFromFirebaseAndUpdateFireStore(CallEvent callEvent) {
             users
                 .doc('${_firebaseUser.uid}')
                 .update({'hasCallerEndCall': 'false'})
-                .then((value) => print("User Added"))
+                .then((value) => print("hasCallerEndCall => false"))
                 .catchError((error) => print("Failed to add user: $error"));
 
             SharedPref.saveValueToShaprf(Config.callStatus,'reset');

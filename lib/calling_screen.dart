@@ -36,13 +36,16 @@ class _CallingScreenState extends State<CallingScreen> {
   bool isMutedVideo = false;
   late RtcEngine engine;
   late CollectionReference users;
-  late Timer timerToleaveChaneel;
+  late Timer timerToleaveChannel;
+  late Timer timer;
+  int startSeconds = 0;
+  String callingTime = "";
 
   @override
   void initState() {
     super.initState();
 
-    timerToleaveChaneel = Timer(Duration(seconds: 10), () {
+    timerToleaveChannel = Timer(Duration(seconds: 10), () {
       _onLeaveChannel();
     });
 
@@ -79,7 +82,8 @@ class _CallingScreenState extends State<CallingScreen> {
         _joined = true;
       });
     }, userJoined: (int uid, int elapsed) {
-      timerToleaveChaneel.cancel();
+      timerToleaveChannel.cancel();
+      countDownTime();
       log('userJoined ${uid}');
       setState(() {
         _remoteUid = uid; //remote user has joined
@@ -97,7 +101,27 @@ class _CallingScreenState extends State<CallingScreen> {
     // Join channel with channel name
     await engine.joinChannel(Config.Token, Config.channelName, null, 0);
   }
+  
+  Future<void> countDownTime() async {
+    timer = Timer.periodic(Duration(seconds: 1), (time) {
+      startSeconds = startSeconds + 1;
 
+      int minutes = startSeconds ~/ 60;
+      int seconds = (startSeconds % 60);
+      setState(() {
+        callingTime = minutes.toString().padLeft(2, "0") + ":" + seconds.toString().padLeft(2, "0");
+      });
+      print(callingTime);
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _onLeaveChannel();
+    timer.cancel();
+    timerToleaveChannel.cancel();
+  }
   // Build UI
   @override
   Widget build(BuildContext context) {
@@ -146,7 +170,7 @@ class _CallingScreenState extends State<CallingScreen> {
                         style: TextStyle(fontSize: 22, color: Colors.white),
                       ),
                       Text(
-                        '05:10',
+                        '$callingTime',
                         style: TextStyle(fontSize: 22, color: Colors.white),
                       ),
                     ],
@@ -243,21 +267,20 @@ class _CallingScreenState extends State<CallingScreen> {
 
   //Leave channel
   void _onLeaveChannel() async {
-    log("lolol");
     await engine.leaveChannel();
 
     //set receiver reject status initial to False
     users
         .doc('${widget.documentsId}')
         .update({'hasReceiverRejectedCall': 'false'})
-        .then((value) => print("User Added"))
+        .then((value) => print("hasReceiverRejectedCall => false"))
         .catchError((error) => print("Failed to add user: $error"));
 
     // caller end call status set to True
     users
         .doc('${widget.documentsId}')
         .update({'hasCallerEndCall': 'true'})
-        .then((value) => print("User Added"))
+        .then((value) => print("hasCallerEndCall => true"))
         .catchError((error) => print("Failed to add user: $error"));
 
     Navigator.of(context).pop();
