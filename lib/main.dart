@@ -1,6 +1,7 @@
 import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:calling_app/home_page.dart';
 import 'package:calling_app/pages/authentication/login_page.dart';
+import 'package:calling_app/phone_auth/phone_auth_dashboard.dart';
 import 'package:calling_app/services/setup_call_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -75,8 +76,10 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
       ),
       home: _firebaseUser?.uid != null
-          ? MyHomePage(userDocumentsId: _firebaseUser!.uid)
-          : AuthenticationPage(),
+          //? MyHomePage(userDocumentsId: _firebaseUser!.uid)
+          //: AuthenticationPage(),
+        ? DashboardPage()
+          : PhoneAuthForm(),
     );
   }
 }
