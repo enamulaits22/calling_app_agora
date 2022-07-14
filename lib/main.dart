@@ -1,6 +1,6 @@
 import 'package:calling_app/config/utils/sp_utils.dart';
-import 'package:calling_app/home_page.dart';
-import 'package:calling_app/pages/authentication/login_page.dart';
+import 'package:calling_app/pages/home_page.dart';
+import 'package:calling_app/pages/auth_page.dart';
 import 'package:calling_app/services/setup_call_service.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -34,11 +34,14 @@ Future<void> main() async {
 /// Top level function to handle incoming call when the app is in the background
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   String? callerName = message.notification!.title;
+  String? callType = message.data['call_type'];
   final service = FlutterBackgroundService();
   service.startService(); //:::::::::::::::::::::::::::starting background service
   SharedPref.saveValueToShaprf(Config.callStatus, 'success');
   SharedPref.saveValueToShaprf(Config.callerName, callerName!);
-  initiateCall(callerName);
+  SharedPref.saveValueToShaprf(Config.callType, callType!);
+  print('==============================$callType');
+  initiateCall(callerName, callType);
 
   // await Firebase.initializeApp().then((value){
   //   CollectionReference users = FirebaseFirestore.instance.collection('users');

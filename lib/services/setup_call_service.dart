@@ -1,7 +1,7 @@
 import 'dart:async';
 // import 'dart:developer';
 import 'dart:math' as math;
-import 'package:calling_app/calling_screen.dart';
+import 'package:calling_app/pages/calling_screen.dart';
 import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:calling_app/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,21 +15,21 @@ import '../config/config.dart';
 
 
 
-void initiateCall(String callerName) {
-  controlCall(callerName);
+void initiateCall(String callerName, String callType) {
+  print('momomo$callType');
+  controlCall();
 
   math.Random random = math.Random();
 
   CallEvent callEvent = CallEvent(
-    sessionId: random.nextInt(100).toString(),
-    callType: 1,
-    // {0 :: Audio call}; {1 :: Video Call}
+    sessionId: random.nextInt(10000).toString(),
+    callType: callType == 'audio' ? 0 : 1, // {0 :: Audio call}; {1 :: Video Call}
     callerId: 9644,
     callerName: callerName,
     opponentsIds: {1},
     userInfo: {'customParameter1': 'value1'},
   );
-
+  print(callEvent.sessionId);
   ConnectycubeFlutterCallKit.showCallNotification(callEvent);
 
   // the call was rejected
@@ -75,11 +75,14 @@ void rejectCallFromFirebaseAndUpdateFireStore(CallEvent callEvent) {
   });
 }
 
-void controlCall(String callerName) {
+void controlCall() {
+  
   Future<void> _onCallAccepted(CallEvent callEvent) async {
-
     navigatorKey.currentState?.push(
-      MaterialPageRoute(builder: (_) => CallingScreen(userName: callerName,)),
+      MaterialPageRoute(builder: (_) => CallingScreen(
+        userName: callEvent.callerName,
+        callType: callEvent.callType == 0 ? 'audio' : 'video',
+      )),
     );
   }
 

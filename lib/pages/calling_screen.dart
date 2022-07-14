@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:calling_app/config/config.dart';
 import 'package:calling_app/config/utils/sp_utils.dart';
+import 'package:calling_app/widgets/audio_call_tile.dart';
 import 'package:calling_app/widgets/custom_button.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -16,11 +17,13 @@ import 'package:permission_handler/permission_handler.dart';
 class CallingScreen extends StatefulWidget {
   final String? documentsId;
   final String userName;
+  final String callType;
 
   const CallingScreen({
     Key? key,
     this.documentsId,
     required this.userName,
+    required this.callType,
   }) : super(key: key);
 
   @override
@@ -39,7 +42,7 @@ class _CallingScreenState extends State<CallingScreen> {
   late Timer timerToleaveChannel;
   late Timer timer;
   int startSeconds = 0;
-  String callingTime = "";
+  String callingTime = "connecting";
 
   @override
   void initState() {
@@ -125,99 +128,136 @@ class _CallingScreenState extends State<CallingScreen> {
   // Build UI
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Agora Call'),
-      // ),
-      body: Padding(
-        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-        child: Stack(
-          children: [
-            Center(
-              child: _switch && _remoteUid !=0 ? _renderRemoteVideo() : _renderLocalPreview(),
-            ),
-            Align(
-              alignment: Alignment.topRight,
-              child: Container(
-                width: 100,
-                height: 100,
-                color: Colors.blue,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _switch = !_switch;
-                    });
-                  },
-                  child: Center(
-                    child: _switch  && _remoteUid !=0 ? _renderLocalPreview() : _renderRemoteVideo(),
+    return WillPopScope(
+      onWillPop: () async {
+        var res = await showDialog(
+          context: context,
+          builder: (c) => AlertDialog(
+            title: Text('Warning'),
+            content: Text('Do you really want to exit'),
+            actions: [
+              ElevatedButton(
+                child: Text('Yes'),
+                onPressed: () => Navigator.pop(c, true),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.red),
+                ),
+              ),
+              ElevatedButton(
+                child: Text('No'),
+                onPressed: () => Navigator.pop(c, false),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.green),
+                ),
+              ),
+            ],
+          ),
+        );
+        return res;
+      },
+      child: Scaffold(
+        // appBar: AppBar(
+        //   title: const Text('Agora Call'),
+        // ),
+        body: widget.callType == 'audio'
+          ? AudioCallTile(
+              callerName: widget.userName,
+              callingTime: callingTime,
+              imageUrl: 'https://enamulhaque028.github.io/profile/img/profile.jpg',
+              isMutedAudio: isMutedAudio,
+              onEndCall: _onLeaveChannel,
+              onToggleMuteAudio: _onToggleMuteAudio,
+            )
+          : Padding(
+          padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+          child: Stack(
+            children: [
+              Center(
+                child: _switch && _remoteUid !=0 ? _renderRemoteVideo() : _renderLocalPreview(),
+              ),
+              Align(
+                alignment: Alignment.topRight,
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  color: Colors.blue,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _switch = !_switch;
+                      });
+                    },
+                    child: Center(
+                      child: _switch  && _remoteUid !=0 ? _renderLocalPreview() : _renderRemoteVideo(),
+                    ),
                   ),
                 ),
               ),
-            ),
-             _remoteUid !=0 ? Align(
-              alignment: Alignment.topCenter,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.2),
+               _remoteUid !=0 ? Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.2),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.userName,
+                          style: TextStyle(fontSize: 22, color: Colors.white),
+                        ),
+                        Text(
+                          '$callingTime',
+                          style: TextStyle(fontSize: 22, color: Colors.white),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Column(
+                ),
+              ) : SizedBox.shrink(),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 40.0),
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        widget.userName,
-                        style: TextStyle(fontSize: 22, color: Colors.white),
+                      CustomButton(
+                        icon: !isMutedAudio ? Icons.mic : Icons.mic_off,
+                        fillColor: Colors.white,
+                        iconColor: Colors.blue,
+                        iconSize: 18,
+                        onTapBtn: _onToggleMuteAudio,
                       ),
-                      Text(
-                        '$callingTime',
-                        style: TextStyle(fontSize: 22, color: Colors.white),
+                      CustomButton(
+                        icon: Icons.call_end,
+                        fillColor: Colors.red,
+                        iconColor: Colors.white,
+                        iconSize: 30,
+                        onTapBtn: _onLeaveChannel,
+                      ),
+                      CustomButton(
+                        icon: !isMutedVideo ? Icons.videocam : Icons.videocam_off,
+                        fillColor: Colors.white,
+                        iconColor: Colors.blue,
+                        iconSize: 18,
+                        onTapBtn: _onToggleMuteVideo,
+                      ),
+                      CustomButton(
+                        icon: Icons.switch_camera,
+                        fillColor: Colors.white,
+                        iconColor: Colors.blue,
+                        iconSize: 18,
+                        onTapBtn: _onSwitchCamera,
                       ),
                     ],
                   ),
                 ),
               ),
-            ) : SizedBox.shrink(),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 40.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomButton(
-                      icon: !isMutedAudio ? Icons.mic : Icons.mic_off,
-                      fillColor: Colors.white,
-                      iconColor: Colors.blue,
-                      iconSize: 18,
-                      onTapBtn: _onToggleMuteAudio,
-                    ),
-                    CustomButton(
-                      icon: Icons.call_end,
-                      fillColor: Colors.red,
-                      iconColor: Colors.white,
-                      iconSize: 30,
-                      onTapBtn: _onLeaveChannel,
-                    ),
-                    CustomButton(
-                      icon: !isMutedVideo ? Icons.videocam : Icons.videocam_off,
-                      fillColor: Colors.white,
-                      iconColor: Colors.blue,
-                      iconSize: 18,
-                      onTapBtn: _onToggleMuteVideo,
-                    ),
-                    CustomButton(
-                      icon: Icons.switch_camera,
-                      fillColor: Colors.white,
-                      iconColor: Colors.blue,
-                      iconSize: 18,
-                      onTapBtn: _onSwitchCamera,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -284,6 +324,9 @@ class _CallingScreenState extends State<CallingScreen> {
         .catchError((error) => print("Failed to add user: $error"));
 
     Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Call ended"),
+    ));
   }
 
   //Switch camera
