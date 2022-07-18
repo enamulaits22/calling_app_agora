@@ -10,12 +10,10 @@ import '../config/config.dart';
 import '../config/utils/sp_utils.dart';
 import '../phone_auth/phone_auth_dashboard.dart';
 
-
 String vId = "";
 
 class Authentication {
   FirebaseAuth auth = FirebaseAuth.instance;
-
 
   // Create a CollectionReference called users that references the firestore collection
   CollectionReference users = FirebaseFirestore.instance.collection('users');
@@ -60,17 +58,13 @@ class Authentication {
     try {
       await auth.signInWithEmailAndPassword(email: email, password: password);
 
-      final fcmToken =
-          await FirebaseMessaging.instance.getToken().then((value) => value);
-      final User? _firebaseUser = auth.currentUser;
-
-      await addUser(fcmToken!, email, _firebaseUser!.uid);
+      User? _firebaseUser = await storeDataToFirestore(email: email);
 
       SharedPref.saveValueToShaprf(Config.userEmail, email);
 
       navigatorKey.currentState?.push(MaterialPageRoute(
           builder: (_) => MyHomePage(
-                userDocumentsId: _firebaseUser.uid,
+                userDocumentsId: _firebaseUser!.uid,
               )));
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -85,21 +79,6 @@ class Authentication {
         ));
       }
     }
-  }
-
-  //::::::::::::::::::::::::::::::::::::::::::::::::: Storing Credential data to Firestore
-  Future<void> addUser(String token, String email, String firebaseUserId) {
-    // Call the user's CollectionReference to add a new user
-    return users
-        .doc('$firebaseUserId')
-        .set({
-          'email': email,
-          'token': token,
-          'hasReceiverRejectedCall': 'false',
-          'hasCallerEndCall': 'false'
-        })
-        .then((value) => print("User Added"))
-        .catchError((error) => print("Failed to add user: $error"));
   }
 
   //::::::::::::::::::::::::::::::::::::::::::::::::: Fetch Otp from Firebase
@@ -124,8 +103,8 @@ class Authentication {
 
   //::::::::::::::::::::::::::::::::::::::::::::::::: Verify Otp and SignIn
   Future<void> verify({required String otp}) async {
-    PhoneAuthCredential phoneAuthCredential = PhoneAuthProvider.credential(
-        verificationId: vId, smsCode: otp);
+    PhoneAuthCredential phoneAuthCredential =
+        PhoneAuthProvider.credential(verificationId: vId, smsCode: otp);
     print('vId phoneAuthCredential: $vId');
 
     signInWithPhoneAuthCredential(phoneAuthCredential);
@@ -137,16 +116,54 @@ class Authentication {
       final authCredential =
           await auth.signInWithCredential(phoneAuthCredential);
 
-      if (authCredential.user != null) {
+      User? _firebaseUser = await storeDataToFirestore(
+          phoneNumber: authCredential.user!.phoneNumber);
+
+      if (_firebaseUser != null) {
         Navigator.push(
             navigatorKey.currentState!.context,
             MaterialPageRoute(
                 builder: (context) => DashboardPage(
-                      uid: authCredential.user?.uid,
+                      uid: _firebaseUser.uid,
                     )));
       }
     } on FirebaseAuthException catch (e) {
       print("catch: $e");
     }
+  }
+
+  Future<User?> storeDataToFirestore(
+      {String? email, String? phoneNumber}) async {
+    final fcmToken =
+        await FirebaseMessaging.instance.getToken().then((value) => value);
+    final User? _firebaseUser = auth.currentUser;
+
+    await addUser(
+      token: fcmToken!,
+      email: email,
+      firebaseUserId: _firebaseUser!.uid,
+      phoneNumber: phoneNumber,
+    );
+    return _firebaseUser;
+  }
+
+  //::::::::::::::::::::::::::::::::::::::::::::::::: Storing Credential data to Firestore
+  Future<void> addUser(
+      {String? token,
+      String? email,
+      String? phoneNumber,
+      String? firebaseUserId}) {
+    // Call the user's CollectionReference to add a new user
+    return users
+        .doc('$firebaseUserId')
+        .set({
+          'email': email,
+          'phoneNumber': phoneNumber,
+          'token': token,
+          'hasReceiverRejectedCall': 'false',
+          'hasCallerEndCall': 'false'
+        })
+        .then((value) => print("User Added"))
+        .catchError((error) => print("Failed to add user: $error"));
   }
 }
