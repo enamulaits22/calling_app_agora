@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:calling_app/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -82,7 +83,10 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: SizedBox(
-            height: MediaQuery.of(context).size.height,
+            height: MediaQuery
+                .of(context)
+                .size
+                .height,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -92,24 +96,24 @@ class _DashboardPageState extends State<DashboardPage> {
                     children: [
                       updatedImage == ''
                           ? CircleAvatar(
-                              backgroundColor: Color(0XFFe6f9ff),
-                              radius: 60.0,
-                              child: CircleAvatar(
-                                radius: 55,
-                                backgroundImage: NetworkImage(userProfilePicture
-                                        .isNotEmpty
-                                    ? userProfilePicture
-                                    : 'https://raw.githubusercontent.com/enamulhaque028/ecommerce_app/master/assets/images/upload.png'),
-                              ),
-                            )
+                        backgroundColor: Color(0XFFe6f9ff),
+                        radius: 60.0,
+                        child: CircleAvatar(
+                          radius: 55,
+                          backgroundImage: NetworkImage(userProfilePicture
+                              .isNotEmpty
+                              ? userProfilePicture
+                              : 'https://raw.githubusercontent.com/enamulhaque028/ecommerce_app/master/assets/images/upload.png'),
+                        ),
+                      )
                           : CircleAvatar(
-                              backgroundColor: const Color(0XFFe6f9ff),
-                              radius: 60.0,
-                              child: CircleAvatar(
-                                radius: 55,
-                                backgroundImage: FileImage(File(updatedImage)),
-                              ),
-                            ),
+                        backgroundColor: const Color(0XFFe6f9ff),
+                        radius: 60.0,
+                        child: CircleAvatar(
+                          radius: 55,
+                          backgroundImage: FileImage(File(updatedImage)),
+                        ),
+                      ),
                       Positioned(
                         bottom: 10,
                         right: 0,
@@ -144,11 +148,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   title: Text('Name'),
                   subtitle: !isNameTapped
                       ? Text(userProfileName.isNotEmpty
-                          ? userProfileName
-                          : 'ABC DEF')
+                      ? userProfileName
+                      : 'ABC DEF')
                       : TextFormField(
-                          controller: _nameController,
-                        ),
+                    controller: _nameController,
+                  ),
                   trailing: InkWell(
                       onTap: () {
                         setState(() {
@@ -161,43 +165,51 @@ class _DashboardPageState extends State<DashboardPage> {
                   leading: Icon(Icons.phone),
                   title: Text('Phone'),
                   subtitle:
-                      Text('${FirebaseAuth.instance.currentUser?.phoneNumber}'),
+                  Text('${FirebaseAuth.instance.currentUser?.phoneNumber}'),
                 ),
                 SizedBox(
                   height: 50,
                 ),
                 !isLoading
                     ? CustomTextButton(
-                        title: 'submit',
-                        onTapBtn: () async {
-                          if (_nameController.text.isNotEmpty) {
-                            setState(() {
-                              isLoading = true;
-                            });
+                  title: 'submit',
+                  onTapBtn: () async {
+                    if (_nameController.text.isNotEmpty) {
+                      setState(() {
+                        isLoading = true;
+                      });
 
-                            final ref = FirebaseStorage.instance
-                                .ref('profileImage')
-                                .child(updatedImage);
-                            final uploadTask = ref.putFile(File(updatedImage));
+                      final ref = FirebaseStorage.instance
+                          .ref('profileImage')
+                          .child(updatedImage);
+                      final uploadTask = ref.putFile(File(updatedImage));
 
-                            final snapShot = await uploadTask.whenComplete(() {});
+                      final snapShot = await uploadTask.whenComplete(() {});
 
-                            await snapShot.ref.getDownloadURL().then((url) {
-                              setState(() {
-                                isLoading = false;
-                              });
-                              return Authentication().addUser(
-                                  userName: userProfileName.isNotEmpty
-                                      ? userProfileName
-                                      : _nameController.text,
-                                  profilePicture: url);
-                            });
-                          }
-                        },
-                      )
+                    final url =  await snapShot.ref.getDownloadURL();
+
+                      setState(() {
+                        isLoading = false;
+                      });
+
+                      Authentication().addUser(
+                          userName: userProfileName.isNotEmpty
+                              ? userProfileName
+                              : _nameController.text,
+                          profilePicture: url);
+
+                      Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) =>
+                              MyHomePage(
+                                  userDocumentsId: FirebaseAuth.instance
+                                      .currentUser!.uid)), (route) => false);
+
+                    }
+                  },
+                )
                     : Center(
-                        child: CircularProgressIndicator(),
-                      )
+                  child: CircularProgressIndicator(),
+                )
               ],
             ),
           ),
