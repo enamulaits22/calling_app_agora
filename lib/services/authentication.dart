@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 
 import '../config/config.dart';
 import '../config/utils/sp_utils.dart';
-import '../phone_auth/phone_auth_dashboard.dart';
+import '../pages/dash_board.dart';
 
 String vId = "";
 
@@ -134,34 +134,35 @@ class Authentication {
 
   Future<User?> storeDataToFirestore(
       {String? email, String? phoneNumber}) async {
-    final fcmToken =
-        await FirebaseMessaging.instance.getToken().then((value) => value);
+
     final User? _firebaseUser = auth.currentUser;
 
-    await addUser(
-      token: fcmToken!,
-      email: email,
-      firebaseUserId: _firebaseUser!.uid,
-      phoneNumber: phoneNumber,
-    );
     return _firebaseUser;
   }
 
   //::::::::::::::::::::::::::::::::::::::::::::::::: Storing Credential data to Firestore
   Future<void> addUser(
-      {String? token,
+      {
       String? email,
       String? phoneNumber,
-      String? firebaseUserId}) {
+      String? userName,
+      String? profilePicture,}) async{
+
+    final fcmToken =
+    await FirebaseMessaging.instance.getToken().then((value) => value);
+    final User? _firebaseUser = auth.currentUser;
+
     // Call the user's CollectionReference to add a new user
     return users
-        .doc('$firebaseUserId')
+        .doc('${_firebaseUser!.uid}')
         .set({
           'email': email,
-          'phoneNumber': phoneNumber,
-          'token': token,
+          'phoneNumber': phoneNumber ?? auth.currentUser?.phoneNumber,
+          'token': fcmToken,
           'hasReceiverRejectedCall': 'false',
-          'hasCallerEndCall': 'false'
+          'hasCallerEndCall': 'false',
+          'userName': userName,
+          'profilePicture': profilePicture,
         })
         .then((value) => print("User Added"))
         .catchError((error) => print("Failed to add user: $error"));

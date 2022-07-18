@@ -1,6 +1,7 @@
 import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:calling_app/home_page.dart';
-import 'package:calling_app/pages/authentication/login_page.dart';
+import 'package:calling_app/pages/dash_board.dart';
+import 'package:calling_app/pages/login_page.dart';
 import 'package:calling_app/phone_auth/phone_auth_dashboard.dart';
 import 'package:calling_app/services/setup_call_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
