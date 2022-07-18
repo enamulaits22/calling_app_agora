@@ -53,7 +53,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                     ) : CustomTextButton(
                       title: 'Sign Up',
                       onTapBtn: () async {
-                        await Authentication.signUpUserWithEmailAndPassword(
+                        await Authentication().signUpUserWithEmailAndPassword(
                           email: emailController.text,
                           password: passwordController.text,
                         );
