@@ -1,5 +1,5 @@
 import 'dart:developer';
-import 'package:calling_app/home_page.dart';
+import 'package:calling_app/pages/home_page.dart';
 import 'package:calling_app/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -62,10 +62,9 @@ class Authentication {
 
       SharedPref.saveValueToShaprf(Config.userEmail, email);
 
-      navigatorKey.currentState?.push(MaterialPageRoute(
-          builder: (_) => MyHomePage(
-                userDocumentsId: _firebaseUser!.uid,
-              )));
+
+      navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => MyHomePage()));
+
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         log('No user found for that email.');

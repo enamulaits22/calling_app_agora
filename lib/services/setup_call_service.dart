@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:developer';
+// import 'dart:developer';
 import 'dart:math' as math;
-import 'package:calling_app/calling_screen.dart';
+import 'package:calling_app/pages/calling_screen.dart';
 import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:calling_app/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,21 +15,21 @@ import '../config/config.dart';
 
 
 
-void initiateCall() {
+void initiateCall(String callerName, String callType) {
+  print('momomo$callType');
   controlCall();
 
   math.Random random = math.Random();
 
   CallEvent callEvent = CallEvent(
-    sessionId: random.nextInt(100).toString(),
-    callType: 1,
-    // {0 :: Audio call}; {1 :: Video Call}
+    sessionId: random.nextInt(10000).toString(),
+    callType: callType == 'audio' ? 0 : 1, // {0 :: Audio call}; {1 :: Video Call}
     callerId: 9644,
-    callerName: 'Caller Name',
+    callerName: callerName,
     opponentsIds: {1},
     userInfo: {'customParameter1': 'value1'},
   );
-
+  print(callEvent.sessionId);
   ConnectycubeFlutterCallKit.showCallNotification(callEvent);
 
   // the call was rejected
@@ -48,25 +48,23 @@ void rejectCallFromFirebaseAndUpdateFireStore(CallEvent callEvent) {
 
     users.doc(_firebaseUser!.uid).snapshots().listen((event) {
       if (event.data() != null) {
-        final e = event.data() as Map<String, dynamic>;
-        print('sdsd sdsd: ${e['hasCallerEndCall']}');
+        final data = event.data() as Map<String, dynamic>;
+        print('sdsd sdsd: ${data['hasCallerEndCall']}');
 
         //check if Receiver's hasCallerEndCall value
-        if (e['hasCallerEndCall'] == 'true') {
-          ConnectycubeFlutterCallKit.reportCallEnded(
-              sessionId: callEvent.sessionId);
+        if (data['hasCallerEndCall'] == 'true') {
+          ConnectycubeFlutterCallKit.reportCallEnded(sessionId: callEvent.sessionId);
 
           Future.delayed(Duration(seconds: 1), (){
             //reset Receiver's hasCallerEndCall initial status set to False
             users
                 .doc('${_firebaseUser.uid}')
                 .update({'hasCallerEndCall': 'false'})
-                .then((value) => print("User Added"))
+                .then((value) => print("hasCallerEndCall => false"))
                 .catchError((error) => print("Failed to add user: $error"));
 
             SharedPref.saveValueToShaprf(Config.callStatus,'reset');
-            service.invoke(
-                "stopService"); //:::::::::::::::::::::::::::stopped background service
+            service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
 
           });
 
@@ -78,10 +76,14 @@ void rejectCallFromFirebaseAndUpdateFireStore(CallEvent callEvent) {
 }
 
 void controlCall() {
+  
   Future<void> _onCallAccepted(CallEvent callEvent) async {
-
-    navigatorKey.currentState
-        ?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(builder: (_) => CallingScreen(
+        userName: callEvent.callerName,
+        callType: callEvent.callType == 0 ? 'audio' : 'video',
+      )),
+    );
   }
 
   Future<void> _onCallRejected(CallEvent callEvent) async {
@@ -101,8 +103,7 @@ void controlCall() {
           .catchError((error) => print("Failed to add user: $error"));
     });
 
-    service.invoke(
-        "stopService"); //:::::::::::::::::::::::::::stopped background service
+    service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
   }
 
   ConnectycubeFlutterCallKit.instance.init(

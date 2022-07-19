@@ -1,3 +1,4 @@
+import 'package:calling_app/config/presentation/app_color.dart';
 import 'package:flutter/material.dart';
 
 class CustomTextButton extends StatelessWidget {
@@ -21,14 +22,7 @@ class CustomTextButton extends StatelessWidget {
         height: 48,
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: <Color>[
-              Color.fromRGBO(26, 201, 253, 1),
-              Color.fromRGBO(29, 105, 241, 1)
-            ],
-          ),
+          gradient: AppColor.blueGradient,
           borderRadius: BorderRadius.all(
             Radius.circular(25),
           ),

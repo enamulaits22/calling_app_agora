@@ -1,15 +1,14 @@
 import 'dart:io';
 
-import 'package:calling_app/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
-import '../phone_auth/phone_auth_dashboard.dart';
 import '../services/authentication.dart';
 import '../widgets/custom_text_button.dart';
 import '../widgets/image_picker_dialog.dart';
+import 'home_page.dart';
 
 /*Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -200,9 +199,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
                       Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(builder: (_) =>
-                              MyHomePage(
-                                  userDocumentsId: FirebaseAuth.instance
-                                      .currentUser!.uid)), (route) => false);
+                              MyHomePage()), (route) => false);
 
                     }
                   },

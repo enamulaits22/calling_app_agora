@@ -1,26 +1,21 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
 import 'dart:developer';
 
 import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
-import 'package:calling_app/calling_screen.dart';
+import 'package:calling_app/pages/calling_screen.dart';
 import 'package:calling_app/services/setup_call_service.dart';
-import 'package:calling_app/helper/devices.dart';
 import 'package:calling_app/main.dart';
 import 'package:calling_app/services/fcm_service.dart';
 
-import 'config/config.dart';
+import '../config/config.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.userDocumentsId}) : super(key: key);
-
-  final String userDocumentsId;
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -30,9 +25,10 @@ class _MyHomePageState extends State<MyHomePage> {
   String? fcmToken = '';
   String? fcmTitle = '';
   FCMService fcmService = FCMService();
-  CollectionReference collectionStream =
-      FirebaseFirestore.instance.collection('users');
+  CollectionReference collectionStream = FirebaseFirestore.instance.collection('users');
   late String userEmail;
+  String callerName = '';
+  String callType = '';
 
   @override
   void initState() {
@@ -44,7 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void getFcmToken() async{
-     userEmail = (await SharedPref.getValueFromShrprs(Config.userEmail,))!;
+     userEmail = (await SharedPref.getValueFromShrprs(Config.userEmail))!;
 
     ConnectycubeFlutterCallKit.getToken().then((token) {
       log('FCM Token: $token');
@@ -62,17 +58,25 @@ class _MyHomePageState extends State<MyHomePage> {
       //   initiateCall();
       // }
       log(':::::::::::::::::::::::::::Triggered from foreground');
-      initiateCall();
+      callerName = message.notification!.title!;
+      callType = message.data['call_type'];
+      initiateCall(callerName, callType);
     });
   }
 
   Future<void> navigateToCallingPageFromBackground() async {
-    final status = await SharedPref.getValueFromShrprs(Config.callStatus,);
+    final status = await SharedPref.getValueFromShrprs(Config.callStatus);
+    final callerNameSp = await SharedPref.getValueFromShrprs(Config.callerName);
+    final callTypeSp = await SharedPref.getValueFromShrprs(Config.callType);
     log(status.toString());
     if (status.toString() == 'success') {
       Future.delayed(Duration(seconds: 0), () {
-        navigatorKey.currentState
-            ?.push(MaterialPageRoute(builder: (_) => CallingScreen()));
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (_) => CallingScreen(
+            userName: callerNameSp!,
+            callType: callTypeSp!,
+          )),
+        );
       });
     }
   }
@@ -91,8 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
               return ListView.builder(
                 itemCount: streamSnapshot.data!.docs.length,
                 itemBuilder: (context, index) {
-                  final DocumentSnapshot documentSnapshot =
-                      streamSnapshot.data!.docs[index];
+                  final DocumentSnapshot documentSnapshot = streamSnapshot.data!.docs[index];
 
                   final isSameUser = userEmail == documentSnapshot['email'];
 
@@ -100,25 +103,26 @@ class _MyHomePageState extends State<MyHomePage> {
                     margin: const EdgeInsets.all(10),
                     child: ListTile(
                       title: Text(documentSnapshot['email']),
-                      subtitle:
-                          Text(documentSnapshot['hasReceiverRejectedCall'].toString()),
-                      onTap: () async {
-                        final token = documentSnapshot['token'];
-                        print('tokendfdf' + token);
-
-                        print('documnetsId: ${streamSnapshot.data!.docs[index].id}');
-
-                        bool isRequestSuccessful =
-                            await fcmService.sendCallRequest('$token');
-
-                        if (isRequestSuccessful) {
-                          navigatorKey.currentState?.push(
-                            MaterialPageRoute(
-                              builder: (_) => CallingScreen(documentsId: streamSnapshot.data!.docs[index].id),
+                      subtitle: Text(documentSnapshot['hasReceiverRejectedCall'].toString()),
+                      trailing: SizedBox(
+                        width: 100,
+                        child: Row(
+                          children: [
+                            IconButton(
+                              onPressed: () async {
+                                await handleCall(documentSnapshot, index, 'video');
+                              },
+                              icon: Icon(Icons.videocam, color: Colors.green,),
                             ),
-                          );
-                        }
-                      },
+                            IconButton(
+                              onPressed: () async {
+                                await handleCall(documentSnapshot, index, 'audio');
+                              },
+                              icon: Icon(Icons.phone, color: Colors.green,),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -131,5 +135,32 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  Future<void> handleCall(
+    DocumentSnapshot<Object?> documentSnapshot,
+    int index,
+    String callType,
+  ) async {
+    final token = documentSnapshot['token'];
+    print('tokendfdf' + token);
+
+    bool isRequestSuccessful = await fcmService.sendCallRequest(
+      fcmToken: '$token',
+      callerName: userEmail,
+      callType: callType,
+    );
+    
+    if (isRequestSuccessful) {
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => CallingScreen(
+            documentsId: documentSnapshot.id,
+            userName: documentSnapshot['email'],
+            callType: callType,
+          ),
+        ),
+      );
+    }
   }
 }

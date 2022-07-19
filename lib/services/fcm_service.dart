@@ -4,19 +4,23 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class FCMService {
-  Future<bool> sendCallRequest(String fcmToken) async {
+  Future<bool> sendCallRequest({
+    required String fcmToken,
+    required String callerName,
+    required String callType,
+  }) async {
     bool isCallSuccessful = false;
     Map data = {
       "to": fcmToken,
       "collapse_key": "type_a",
       "notification": {
         "body": "",
-        "title": ""
+        "title": callerName,
       },
       "data": {
         "body": "Body of Your Notification in Data",
         "title": "Title of Your Notification in Title",
-        "key_1": "Value for key_1",
+        "call_type": callType,
         "key_2": "Value for key_2"
       }
     };
