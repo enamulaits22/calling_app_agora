@@ -41,13 +41,13 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   SharedPref.saveValueToShaprf(Config.callStatus,'success');
   initiateCall();
 
-  await Firebase.initializeApp().then((value){
-    CollectionReference users = FirebaseFirestore.instance.collection('users');
-    users.doc('d0Wj8uWrL1fvwos7umA55sfWxET2').get().then((value){
+  ///Get User Info From Firestore
+   /* CollectionReference users = FirebaseFirestore.instance.collection('users');
+    users.doc('uid').get().then((value){
       final e = value.data() as Map<String, dynamic>;
       print('sdsd: ${e['email']}');
-    });
-  });
+    });*/
+
 
 }
 
