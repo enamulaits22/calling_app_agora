@@ -7,6 +7,7 @@ class Config {
   /******************************* Sahred Preference Keys *******************************/
   static String callStatus = 'status';
   static String callerName = 'caller_name';
+  static String callerImage = 'caller_image';
   static String callType = 'call_type';
-  static String userEmail = 'email';
+  static String userPhoneNumber = 'phoneNumber';
 }

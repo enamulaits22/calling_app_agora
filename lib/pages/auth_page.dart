@@ -1,4 +1,3 @@
-import 'package:calling_app/services/authentication.dart';
 import 'package:calling_app/widgets/app_logo.dart';
 import 'package:calling_app/widgets/custom_text_button.dart';
 import 'package:calling_app/widgets/custom_textfield.dart';
@@ -45,18 +44,18 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                     isPageLogin ? CustomTextButton(
                       title: 'Login',
                       onTapBtn: (){
-                        Authentication().loginUserWithEmailAndPassword(
-                          email: emailController.text,
-                          password: passwordController.text,
-                        );
+                        // Authentication().loginUserWithEmailAndPassword(
+                        //   email: emailController.text,
+                        //   password: passwordController.text,
+                        // );
                       },
                     ) : CustomTextButton(
                       title: 'Sign Up',
                       onTapBtn: () async {
-                        await Authentication().signUpUserWithEmailAndPassword(
-                          email: emailController.text,
-                          password: passwordController.text,
-                        );
+                        // await Authentication().signUpUserWithEmailAndPassword(
+                        //   email: emailController.text,
+                        //   password: passwordController.text,
+                        // );
                       },
                     ),
                     SizedBox(height: 10),

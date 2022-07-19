@@ -18,7 +18,7 @@ class Authentication {
   // Create a CollectionReference called users that references the firestore collection
   CollectionReference users = FirebaseFirestore.instance.collection('users');
 
-  //::::::::::::::::::::::::::::::::::::::::::::::::: SIGN UP with email and password
+/*  //::::::::::::::::::::::::::::::::::::::::::::::::: SIGN UP with email and password
   Future<void> signUpUserWithEmailAndPassword(
       {required String email, required String password}) async {
     BuildContext context = navigatorKey.currentContext!;
@@ -52,7 +52,7 @@ class Authentication {
   }
 
   //::::::::::::::::::::::::::::::::::::::::::::::::: LOGIN WITH Email and password
-  Future<void> loginUserWithEmailAndPassword(
+   Future<void> loginUserWithEmailAndPassword(
       {required String email, required String password}) async {
     BuildContext context = navigatorKey.currentContext!;
     try {
@@ -60,7 +60,7 @@ class Authentication {
 
       User? _firebaseUser = await storeDataToFirestore(email: email);
 
-      SharedPref.saveValueToShaprf(Config.userEmail, email);
+      SharedPref.saveValueToShaprf(Config.userPhoneNumber, email);
 
 
       navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => MyHomePage()));
@@ -78,7 +78,7 @@ class Authentication {
         ));
       }
     }
-  }
+  }*/
 
   //::::::::::::::::::::::::::::::::::::::::::::::::: Fetch Otp from Firebase
   Future<void> fetchOtp({required String phoneNumber}) async {
@@ -119,6 +119,9 @@ class Authentication {
           phoneNumber: authCredential.user!.phoneNumber);
 
       if (_firebaseUser != null) {
+        SharedPref.saveValueToShaprf(
+            Config.userPhoneNumber, authCredential.user!.phoneNumber!);
+
         Navigator.push(
             navigatorKey.currentState!.context,
             MaterialPageRoute(
@@ -133,29 +136,26 @@ class Authentication {
 
   Future<User?> storeDataToFirestore(
       {String? email, String? phoneNumber}) async {
-
     final User? _firebaseUser = auth.currentUser;
 
     return _firebaseUser;
   }
 
   //::::::::::::::::::::::::::::::::::::::::::::::::: Storing Credential data to Firestore
-  Future<void> addUser(
-      {
-      String? email,
-      String? phoneNumber,
-      String? userName,
-      String? profilePicture,}) async{
-
+  Future<void> addUser({
+    String? email,
+    String? phoneNumber,
+    String? userName,
+    String? profilePicture,
+  }) async {
     final fcmToken =
-    await FirebaseMessaging.instance.getToken().then((value) => value);
+        await FirebaseMessaging.instance.getToken().then((value) => value);
     final User? _firebaseUser = auth.currentUser;
 
     // Call the user's CollectionReference to add a new user
     return users
         .doc('${_firebaseUser!.uid}')
         .set({
-          'email': email,
           'phoneNumber': phoneNumber ?? auth.currentUser?.phoneNumber,
           'token': fcmToken,
           'hasReceiverRejectedCall': 'false',

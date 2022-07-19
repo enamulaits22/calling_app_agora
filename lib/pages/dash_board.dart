@@ -192,7 +192,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       });
 
                       Authentication().addUser(
-                          userName: userProfileName.isNotEmpty
+                          userName: _nameController.text.isEmpty
                               ? userProfileName
                               : _nameController.text,
                           profilePicture: url);

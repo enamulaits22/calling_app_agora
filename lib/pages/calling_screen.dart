@@ -17,12 +17,14 @@ import 'package:permission_handler/permission_handler.dart';
 class CallingScreen extends StatefulWidget {
   final String? documentsId;
   final String userName;
+  final String? userPhoto;
   final String callType;
 
   const CallingScreen({
     Key? key,
     this.documentsId,
     required this.userName,
+    required this.userPhoto,
     required this.callType,
   }) : super(key: key);
 
@@ -167,7 +169,7 @@ class _CallingScreenState extends State<CallingScreen> {
           ? AudioCallTile(
               callerName: widget.userName,
               callingTime: callingTime,
-              imageUrl: 'https://enamulhaque028.github.io/profile/img/profile.jpg',
+              imageUrl: widget.userPhoto!,
               isMutedAudio: isMutedAudio,
               onEndCall: _onLeaveChannel,
               onToggleMuteAudio: _onToggleMuteAudio,

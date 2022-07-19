@@ -15,7 +15,7 @@ import '../config/config.dart';
 
 
 
-void initiateCall(String callerName, String callType) {
+void initiateCall(String callerName, String callType, String callerImage) {
   print('momomo$callType');
   controlCall();
 
@@ -27,7 +27,7 @@ void initiateCall(String callerName, String callType) {
     callerId: 9644,
     callerName: callerName,
     opponentsIds: {1},
-    userInfo: {'customParameter1': 'value1'},
+    userInfo: {'callerImage': callerImage},
   );
   print(callEvent.sessionId);
   ConnectycubeFlutterCallKit.showCallNotification(callEvent);
@@ -81,6 +81,7 @@ void controlCall() {
     navigatorKey.currentState?.push(
       MaterialPageRoute(builder: (_) => CallingScreen(
         userName: callEvent.callerName,
+        userPhoto: callEvent.userInfo!['callerImage'],
         callType: callEvent.callType == 0 ? 'audio' : 'video',
       )),
     );

@@ -7,6 +7,7 @@ class FCMService {
   Future<bool> sendCallRequest({
     required String fcmToken,
     required String callerName,
+    required String callerImage,
     required String callType,
   }) async {
     bool isCallSuccessful = false;
@@ -21,6 +22,7 @@ class FCMService {
         "body": "Body of Your Notification in Data",
         "title": "Title of Your Notification in Title",
         "call_type": callType,
+        "caller_image": callerImage,
         "key_2": "Value for key_2"
       }
     };
