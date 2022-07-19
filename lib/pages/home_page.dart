@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
 import 'dart:developer';
 
@@ -16,9 +15,7 @@ import 'package:calling_app/services/fcm_service.dart';
 import '../config/config.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.userDocumentsId}) : super(key: key);
-
-  final String userDocumentsId;
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();

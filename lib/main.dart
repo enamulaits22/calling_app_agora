@@ -78,7 +78,7 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
       ),
       home: _firebaseUser?.uid != null
-        ? MyHomePage(userDocumentsId: _firebaseUser!.uid)
+        ? MyHomePage()
         : AuthenticationPage(),
     );
   }

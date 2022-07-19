@@ -6,9 +6,11 @@ class AudioCallTile extends StatelessWidget {
   final String callerName;
   final String callingTime;
   final String imageUrl;
-  final bool isMutedAudio;
   final VoidCallback onEndCall;
+  final bool isMutedAudio;
   final VoidCallback onToggleMuteAudio;
+  final bool isSpeakerEnable;
+  final VoidCallback onToggleSpeaker;
 
   const AudioCallTile({
     Key? key,
@@ -18,6 +20,8 @@ class AudioCallTile extends StatelessWidget {
     required this.isMutedAudio,
     required this.onEndCall,
     required this.onToggleMuteAudio,
+    required this.isSpeakerEnable,
+    required this.onToggleSpeaker
   }) : super(key: key);
 
   @override
@@ -73,14 +77,20 @@ class AudioCallTile extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      const IconData(
-                        0xe6c5,
-                        fontFamily: 'MaterialIcons',
+                  Container(
+                    decoration: isSpeakerEnable ? BoxDecoration(
+                      color: Colors.grey.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(20)
+                    ) : null,
+                    child: IconButton(
+                      onPressed: onToggleSpeaker,
+                      icon: Icon(
+                        const IconData(
+                          0xe6c5,
+                          fontFamily: 'MaterialIcons',
+                        ),
+                        color: Colors.white,
                       ),
-                      color: Colors.white,
                     ),
                   ),
                   IconButton(

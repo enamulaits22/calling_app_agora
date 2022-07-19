@@ -37,6 +37,7 @@ class _CallingScreenState extends State<CallingScreen> {
   bool _switch = false;
   bool isMutedAudio = false;
   bool isMutedVideo = false;
+  bool isSpeakerEnable = false;
   late RtcEngine engine;
   late CollectionReference users;
   late Timer timerToleaveChannel;
@@ -102,6 +103,9 @@ class _CallingScreenState extends State<CallingScreen> {
     // Enable video
     await engine.enableVideo();
     // Join channel with channel name
+    if (widget.callType == 'audio') {
+      await engine.setEnableSpeakerphone(isSpeakerEnable);
+    }
     await engine.joinChannel(Config.Token, Config.channelName, null, 0);
   }
   
@@ -167,6 +171,8 @@ class _CallingScreenState extends State<CallingScreen> {
               isMutedAudio: isMutedAudio,
               onEndCall: _onLeaveChannel,
               onToggleMuteAudio: _onToggleMuteAudio,
+              isSpeakerEnable: isSpeakerEnable,
+              onToggleSpeaker: _onToggleSpeaker,
             )
           : Padding(
           padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
@@ -348,5 +354,13 @@ class _CallingScreenState extends State<CallingScreen> {
       isMutedVideo = !isMutedVideo;
     });
     await engine.muteLocalVideoStream(isMutedVideo);
+  }
+  
+  //Enable and Disable video
+  void _onToggleSpeaker() async {
+    setState(() {
+      isSpeakerEnable = !isSpeakerEnable;
+    });
+    await engine.setEnableSpeakerphone(isSpeakerEnable);
   }
 }
