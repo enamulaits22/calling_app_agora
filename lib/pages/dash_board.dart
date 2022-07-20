@@ -82,10 +82,7 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: SizedBox(
-            height: MediaQuery
-                .of(context)
-                .size
-                .height,
+            height: MediaQuery.of(context).size.height,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -178,35 +175,27 @@ class _DashboardPageState extends State<DashboardPage> {
                         isLoading = true;
                       });
 
-                      final ref = FirebaseStorage.instance
-                          .ref('profileImage')
-                          .child(updatedImage);
+                      final ref = FirebaseStorage.instance.ref('profileImage').child(updatedImage);
                       final uploadTask = ref.putFile(File(updatedImage));
-
                       final snapShot = await uploadTask.whenComplete(() {});
-
-                    final url =  await snapShot.ref.getDownloadURL();
+                      final url = await snapShot.ref.getDownloadURL();
 
                       setState(() {
                         isLoading = false;
                       });
 
                       Authentication().addUser(
-                          userName: _nameController.text.isEmpty
-                              ? userProfileName
-                              : _nameController.text,
-                          profilePicture: url);
+                        userName: _nameController.text.isEmpty ? userProfileName : _nameController.text,
+                        profilePicture: url,
+                      );
 
                       Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (_) =>
-                              MyHomePage()), (route) => false);
-
+                        MaterialPageRoute(builder: (_) => MyHomePage()),
+                        (route) => false,
+                      );
                     }
                   },
-                )
-                    : Center(
-                  child: CircularProgressIndicator(),
-                )
+                ) : Center(child: CircularProgressIndicator())
               ],
             ),
           ),

@@ -8,6 +8,7 @@ class CustomTextField extends StatelessWidget {
   final IconData icon;
   final bool obscureText;
   final Color textColor;
+  final TextInputType keyboardType;
 
   const CustomTextField({
     Key? key,
@@ -17,6 +18,7 @@ class CustomTextField extends StatelessWidget {
     required this.icon,
     this.obscureText = false,
     this.textColor = AppColor.textColor,
+    this.keyboardType = TextInputType.text,
   }) : super(key: key);
 
   @override
@@ -30,7 +32,7 @@ class CustomTextField extends StatelessWidget {
           validator: (value) => value!.isEmpty ? '* required' : null,
           readOnly: readOnly,
           obscureText: obscureText,
-          keyboardType: TextInputType.text,
+          keyboardType: keyboardType,
           decoration: InputDecoration(
             labelText: placeholderText,
             labelStyle: TextStyle(

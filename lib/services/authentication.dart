@@ -1,5 +1,7 @@
+// import 'dart:developer';
+// import 'package:calling_app/pages/home_page.dart';
 import 'dart:developer';
-import 'package:calling_app/pages/home_page.dart';
+
 import 'package:calling_app/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -82,28 +84,38 @@ class Authentication {
 
   //::::::::::::::::::::::::::::::::::::::::::::::::: Fetch Otp from Firebase
   Future<void> fetchOtp({required String phoneNumber}) async {
-    await auth.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await auth.signInWithCredential(credential);
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        if (e.code == 'invalid-phone-number') {
-          print('The provided phone number is not valid.');
-        }
-      },
-      codeSent: (String verificationId, int? resendToken) async {
-        vId = verificationId;
-        print('vId: $vId');
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {},
-    );
+    BuildContext context = navigatorKey.currentContext!;
+    try {
+      await auth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          await auth.signInWithCredential(credential);
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          if (e.code == 'invalid-phone-number') {
+            log('The provided phone number is not valid.');
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text("The provided phone number is not valid."),
+            ));
+          }
+        },
+        codeSent: (String verificationId, int? resendToken) async {
+          vId = verificationId;
+          print('vId: $vId');
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {},
+      );
+    } catch (e) {
+      log(e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.toString()),
+      ));
+    }
   }
 
   //::::::::::::::::::::::::::::::::::::::::::::::::: Verify Otp and SignIn
   Future<void> verify({required String otp}) async {
-    PhoneAuthCredential phoneAuthCredential =
-        PhoneAuthProvider.credential(verificationId: vId, smsCode: otp);
+    PhoneAuthCredential phoneAuthCredential = PhoneAuthProvider.credential(verificationId: vId, smsCode: otp);
     print('vId phoneAuthCredential: $vId');
 
     signInWithPhoneAuthCredential(phoneAuthCredential);
@@ -112,30 +124,27 @@ class Authentication {
   Future<void> signInWithPhoneAuthCredential(
       PhoneAuthCredential phoneAuthCredential) async {
     try {
-      final authCredential =
-          await auth.signInWithCredential(phoneAuthCredential);
+      final authCredential = await auth.signInWithCredential(phoneAuthCredential);
 
       User? _firebaseUser = await storeDataToFirestore(
           phoneNumber: authCredential.user!.phoneNumber);
 
       if (_firebaseUser != null) {
-        SharedPref.saveValueToShaprf(
-            Config.userPhoneNumber, authCredential.user!.phoneNumber!);
+        SharedPref.saveValueToShaprf(Config.userPhoneNumber, authCredential.user!.phoneNumber!);
 
         Navigator.push(
-            navigatorKey.currentState!.context,
-            MaterialPageRoute(
-                builder: (context) => DashboardPage(
-                      uid: _firebaseUser.uid,
-                    )));
+          navigatorKey.currentState!.context,
+          MaterialPageRoute(
+            builder: (context) => DashboardPage(uid: _firebaseUser.uid),
+          ),
+        );
       }
     } on FirebaseAuthException catch (e) {
       print("catch: $e");
     }
   }
 
-  Future<User?> storeDataToFirestore(
-      {String? email, String? phoneNumber}) async {
+  Future<User?> storeDataToFirestore({String? email, String? phoneNumber}) async {
     final User? _firebaseUser = auth.currentUser;
 
     return _firebaseUser;
