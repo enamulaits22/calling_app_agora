@@ -111,7 +111,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 itemCount: streamSnapshot.data!.docs.length,
                 itemBuilder: (context, index) {
                   final DocumentSnapshot documentSnapshot = streamSnapshot.data!.docs[index];
-                  log(documentSnapshot.data().toString());
 
                   final isSameUser = userPhoneNo == documentSnapshot['phoneNumber'];
 
