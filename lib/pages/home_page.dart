@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:calling_app/models/contact_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:contacts_service/contacts_service.dart';
@@ -109,9 +110,6 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int index = 0; index < contacts.length; index++) {
       if (contacts[index].phones!.isNotEmpty) {
         String name = contacts[index].displayName!;
-        contacts[index].phones!.map((e) {
-          log(e.value!);
-        });
         contacts[index].phones!.map((data) {
           // log('==============$index: $name');
           var phoneNumber = '+88' + data.value!.replaceAll("+88", "").replaceAll("-", "", ).replaceAll(" ", "");
@@ -120,7 +118,6 @@ class _MyHomePageState extends State<MyHomePage> {
             contactsList.add(ContactModel(name: name, phoneNumber: phoneNumber));
             isLoading = false;
           });
-          return data;
         }).toList();
         // String number = contacts[index].phones![0].value!;
         // var phoneNumber = '+88' + number.replaceAll("+88", "").replaceAll("-", "", ).replaceAll(" ", "");
@@ -227,14 +224,4 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     }
   }
-}
-
-
-class ContactModel {
-  String name;
-  String phoneNumber;
-  ContactModel({
-    required this.name,
-    required this.phoneNumber,
-  });
 }
