@@ -156,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 final hasNumberSaved = contactsList.any((element) => element.phoneNumber.contains(documentSnapshot['phoneNumber']));
                 final contaclListIndex = contactsList.indexWhere((element) => element.phoneNumber == documentSnapshot['phoneNumber']);
                 // log(contaclListIndex.toString());
-                String userName = contactsList[contaclListIndex].name;
+                // String userName = contactsList[contaclListIndex].name;
                 return (isSameUser || !hasNumberSaved) ? SizedBox.shrink() : Card(
                   margin: const EdgeInsets.symmetric(vertical: 10),
                   child: ListTile(
@@ -164,7 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     visualDensity: VisualDensity(horizontal: -4, vertical: -4),
                     // title: Text(documentSnapshot['userName']),
-                    title: Text(userName),
+                    title: Text( contactsList[contaclListIndex].name),
                     subtitle: Text(documentSnapshot['phoneNumber']),
                     leading: ClipOval(
                       child: SizedBox.fromSize(
@@ -178,13 +178,13 @@ class _MyHomePageState extends State<MyHomePage> {
                         children: [
                           IconButton(
                             onPressed: () async {
-                              await handleCall(documentSnapshot, 'video', userName);
+                              await handleCall(documentSnapshot, 'video',  contactsList[contaclListIndex].name);
                             },
                             icon: Icon(Icons.videocam, color: Colors.green,),
                           ),
                           IconButton(
                             onPressed: () async {
-                              await handleCall(documentSnapshot, 'audio', userName);
+                              await handleCall(documentSnapshot, 'audio',  contactsList[contaclListIndex].name);
                             },
                             icon: Icon(Icons.phone, color: Colors.green,),
                           ),
