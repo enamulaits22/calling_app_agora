@@ -1,17 +1,20 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:contacts_service/contacts_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-import 'package:calling_app/pages/calling_screen.dart';
-import 'package:calling_app/services/setup_call_service.dart';
+import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:calling_app/main.dart';
+import 'package:calling_app/pages/calling_screen.dart';
 import 'package:calling_app/services/fcm_service.dart';
+import 'package:calling_app/services/setup_call_service.dart';
 
 import '../config/config.dart';
 
@@ -33,6 +36,8 @@ class _MyHomePageState extends State<MyHomePage> {
   String callType = '';
   String currentUserName = '';
   String currentUserPhoto = '';
+  List<ContactModel> contactsList = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -41,10 +46,11 @@ class _MyHomePageState extends State<MyHomePage> {
     getFcmToken();
     getUserInitialData();
     navigateToCallingPageFromBackground();
+    getAndFilterContactList();
     super.initState();
   }
 
-  void getUserInitialData(){
+  Future<void> getUserInitialData() async {
     collectionStream.doc(FirebaseAuth.instance.currentUser!.uid).snapshots().listen((event) {
       currentUserName = event['userName'];
       currentUserPhoto = event['profilePicture'];
@@ -96,77 +102,107 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<void> getAndFilterContactList() async {
+    await [Permission.contacts].request();
+    List<Contact> contacts = await ContactsService.getContacts();
+    log('::::::::::::::::::::::::::::::Total Contacts Found: ${contacts.length}');
+    for (int index = 0; index < contacts.length; index++) {
+      if (contacts[index].phones!.isNotEmpty) {
+        String name = contacts[index].displayName!;
+        contacts[index].phones!.map((e) {
+          log(e.value!);
+        });
+        contacts[index].phones!.map((data) {
+          // log('==============$index: $name');
+          var phoneNumber = '+88' + data.value!.replaceAll("+88", "").replaceAll("-", "", ).replaceAll(" ", "");
+          log('++++++++++++++++++${contacts[index].displayName!}::: $phoneNumber');
+          setState(() {
+            contactsList.add(ContactModel(name: name, phoneNumber: phoneNumber));
+            isLoading = false;
+          });
+          return data;
+        }).toList();
+        // String number = contacts[index].phones![0].value!;
+        // var phoneNumber = '+88' + number.replaceAll("+88", "").replaceAll("-", "", ).replaceAll(" ", "");
+        // log('::::::::::::::::::::::::::::::$phoneNumber');
+        // setState(() {
+        //   contactsList.add(ContactModel(name: name, phoneNumber: phoneNumber));
+        //   isLoading = false;
+        // });
+      }      
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Flutter Call App'),
       ),
-      body: Container(
-        child: StreamBuilder<QuerySnapshot>(
-          stream: collectionStream.snapshots(),
-          builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
-            if (streamSnapshot.hasData) {
-              return ListView.builder(
-                itemCount: streamSnapshot.data!.docs.length,
-                itemBuilder: (context, index) {
-                  final DocumentSnapshot documentSnapshot = streamSnapshot.data!.docs[index];
-                  log(documentSnapshot.data().toString());
+      body: StreamBuilder<QuerySnapshot>(
+        stream: collectionStream.snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+          if (streamSnapshot.hasData) {
+            return isLoading
+            ? Center(child: CircularProgressIndicator())
+            : ListView.builder(
+              shrinkWrap: true,
+              itemCount: streamSnapshot.data!.docs.length,
+              itemBuilder: (context, index) {
+                final DocumentSnapshot documentSnapshot = streamSnapshot.data!.docs[index];
+                // log(documentSnapshot.data().toString());
 
-                  final isSameUser = userPhoneNo == documentSnapshot['phoneNumber'];
-
-                  return isSameUser ? SizedBox.shrink() : Card(
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: ListTile(
-                      minLeadingWidth : 10,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      visualDensity: VisualDensity(horizontal: -4, vertical: -4),
-                      title: Text(documentSnapshot['userName']),
-                      subtitle: Text(documentSnapshot['phoneNumber']),
-                      leading: ClipOval(
-                        child: SizedBox.fromSize(
-                          size: Size.fromRadius(22), // Image radius
-                          child: Image.network(documentSnapshot['profilePicture'], fit: BoxFit.cover),
-                        ),
-                      ),
-                      trailing: SizedBox(
-                        width: 100,
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: () async {
-                                await handleCall(documentSnapshot, index, 'video');
-                              },
-                              icon: Icon(Icons.videocam, color: Colors.green,),
-                            ),
-                            IconButton(
-                              onPressed: () async {
-                                await handleCall(documentSnapshot, index, 'audio');
-                              },
-                              icon: Icon(Icons.phone, color: Colors.green,),
-                            ),
-                          ],
-                        ),
+                final isSameUser = userPhoneNo == documentSnapshot['phoneNumber'];
+                final hasNumberSaved = contactsList.any((element) => element.phoneNumber.contains(documentSnapshot['phoneNumber']));
+                final contaclListIndex = contactsList.indexWhere((element) => element.phoneNumber == documentSnapshot['phoneNumber']);
+                // log(contaclListIndex.toString());
+                String userName = contactsList[contaclListIndex].name;
+                return (isSameUser || !hasNumberSaved) ? SizedBox.shrink() : Card(
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  child: ListTile(
+                    minLeadingWidth : 10,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    visualDensity: VisualDensity(horizontal: -4, vertical: -4),
+                    // title: Text(documentSnapshot['userName']),
+                    title: Text(userName),
+                    subtitle: Text(documentSnapshot['phoneNumber']),
+                    leading: ClipOval(
+                      child: SizedBox.fromSize(
+                        size: Size.fromRadius(22), // Image radius
+                        child: Image.network(documentSnapshot['profilePicture'], fit: BoxFit.cover),
                       ),
                     ),
-                  );
-                },
-              );
-            }
-            return const Center(
-              child: CircularProgressIndicator(),
+                    trailing: SizedBox(
+                      width: 100,
+                      child: Row(
+                        children: [
+                          IconButton(
+                            onPressed: () async {
+                              await handleCall(documentSnapshot, 'video', userName);
+                            },
+                            icon: Icon(Icons.videocam, color: Colors.green,),
+                          ),
+                          IconButton(
+                            onPressed: () async {
+                              await handleCall(documentSnapshot, 'audio', userName);
+                            },
+                            icon: Icon(Icons.phone, color: Colors.green,),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             );
-          },
-        ),
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
       ),
     );
   }
 
-  Future<void> handleCall(
-    DocumentSnapshot<Object?> documentSnapshot,
-    int index,
-    String callType,
-  ) async {
+  Future<void> handleCall(DocumentSnapshot<Object?> documentSnapshot, String callType, String calledUserName) async {
     final token = documentSnapshot['token'];
     print('tokendfdf' + token);
 
@@ -182,7 +218,8 @@ class _MyHomePageState extends State<MyHomePage> {
         MaterialPageRoute(
           builder: (_) => CallingScreen(
             documentsId: documentSnapshot.id,
-            userName: documentSnapshot['userName'],
+            // userName: documentSnapshot['userName'],
+            userName: calledUserName,
             userPhoto: documentSnapshot['profilePicture'],
             callType: callType,
           ),
@@ -190,4 +227,14 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     }
   }
+}
+
+
+class ContactModel {
+  String name;
+  String phoneNumber;
+  ContactModel({
+    required this.name,
+    required this.phoneNumber,
+  });
 }
