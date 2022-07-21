@@ -171,6 +171,7 @@ class Authentication {
           'hasCallerEndCall': 'false',
           'userName': userName,
           'profilePicture': profilePicture,
+          'isReceiverInCall': 'false',
         })
         .then((value) => print("User Added"))
         .catchError((error) => print("Failed to add user: $error"));

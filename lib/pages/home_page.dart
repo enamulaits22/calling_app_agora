@@ -26,13 +26,15 @@ class _MyHomePageState extends State<MyHomePage> {
   String? fcmToken = '';
   String? fcmTitle = '';
   FCMService fcmService = FCMService();
-  CollectionReference collectionStream = FirebaseFirestore.instance.collection('users');
+  CollectionReference collectionStream =
+      FirebaseFirestore.instance.collection('users');
   late String userPhoneNo;
   String callerName = '';
   String callerImage = '';
   String callType = '';
   String currentUserName = '';
   String currentUserPhoto = '';
+  bool isDisableCallingButton = false;
 
   @override
   void initState() {
@@ -44,15 +46,21 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
-  void getUserInitialData(){
-    collectionStream.doc(FirebaseAuth.instance.currentUser!.uid).snapshots().listen((event) {
-      currentUserName = event['userName'];
-      currentUserPhoto = event['profilePicture'];
+  void getUserInitialData() {
+    collectionStream
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .snapshots()
+        .listen((event) {
+      if (event.exists) {
+        currentUserName = event['userName'];
+        currentUserPhoto = event['profilePicture'];
+      }
     });
   }
 
-  void getFcmToken() async{
-     userPhoneNo = (await SharedPref.getValueFromShrprs(Config.userPhoneNumber))!;
+  void getFcmToken() async {
+    userPhoneNo =
+        (await SharedPref.getValueFromShrprs(Config.userPhoneNumber))!;
 
     ConnectycubeFlutterCallKit.getToken().then((token) {
       log('FCM Token: $token');
@@ -80,17 +88,19 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> navigateToCallingPageFromBackground() async {
     final status = await SharedPref.getValueFromShrprs(Config.callStatus);
     final callerNameSp = await SharedPref.getValueFromShrprs(Config.callerName);
-    final callerImageSp = await SharedPref.getValueFromShrprs(Config.callerImage);
+    final callerImageSp =
+        await SharedPref.getValueFromShrprs(Config.callerImage);
     final callTypeSp = await SharedPref.getValueFromShrprs(Config.callType);
     log(status.toString());
     if (status.toString() == 'success') {
       Future.delayed(Duration(seconds: 0), () {
         navigatorKey.currentState?.push(
-          MaterialPageRoute(builder: (_) => CallingScreen(
-            userName: callerNameSp!,
-            userPhoto: callerImageSp!,
-            callType: callTypeSp!,
-          )),
+          MaterialPageRoute(
+              builder: (_) => CallingScreen(
+                    userName: callerNameSp!,
+                    userPhoto: callerImageSp!,
+                    callType: callTypeSp!,
+                  )),
         );
       });
     }
@@ -110,45 +120,77 @@ class _MyHomePageState extends State<MyHomePage> {
               return ListView.builder(
                 itemCount: streamSnapshot.data!.docs.length,
                 itemBuilder: (context, index) {
-                  final DocumentSnapshot documentSnapshot = streamSnapshot.data!.docs[index];
+                  final DocumentSnapshot documentSnapshot =
+                      streamSnapshot.data!.docs[index];
 
-                  final isSameUser = userPhoneNo == documentSnapshot['phoneNumber'];
+                  final isSameUser =
+                      userPhoneNo == documentSnapshot['phoneNumber'];
 
-                  return isSameUser ? SizedBox.shrink() : Card(
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: ListTile(
-                      minLeadingWidth : 10,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      visualDensity: VisualDensity(horizontal: -4, vertical: -4),
-                      title: Text(documentSnapshot['userName']),
-                      subtitle: Text(documentSnapshot['phoneNumber']),
-                      leading: ClipOval(
-                        child: SizedBox.fromSize(
-                          size: Size.fromRadius(22), // Image radius
-                          child: Image.network(documentSnapshot['profilePicture'], fit: BoxFit.cover),
-                        ),
-                      ),
-                      trailing: SizedBox(
-                        width: 100,
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: () async {
-                                await handleCall(documentSnapshot, index, 'video');
-                              },
-                              icon: Icon(Icons.videocam, color: Colors.green,),
+                  return isSameUser
+                      ? SizedBox.shrink()
+                      : Card(
+                          margin: const EdgeInsets.symmetric(vertical: 10),
+                          child: ListTile(
+                            minLeadingWidth: 10,
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            visualDensity:
+                                VisualDensity(horizontal: -4, vertical: -4),
+                            title: Text(documentSnapshot['userName']),
+                            subtitle: Text(documentSnapshot['phoneNumber']),
+                            leading: ClipOval(
+                              child: SizedBox.fromSize(
+                                size: Size.fromRadius(22), // Image radius
+                                child: Image.network(
+                                    documentSnapshot['profilePicture'],
+                                    fit: BoxFit.cover),
+                              ),
                             ),
-                            IconButton(
-                              onPressed: () async {
-                                await handleCall(documentSnapshot, index, 'audio');
-                              },
-                              icon: Icon(Icons.phone, color: Colors.green,),
+                            trailing: SizedBox(
+                              width: 100,
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                    onPressed: !isDisableCallingButton
+                                        ? () async {
+                                            await handleCall(
+                                              documentSnapshot,
+                                              index,
+                                              'video',
+                                              isReceiverInCall:
+                                                  documentSnapshot[
+                                                      'isReceiverInCall'],
+                                            );
+                                          }
+                                        : null,
+                                    icon: Icon(
+                                      Icons.videocam,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: !isDisableCallingButton
+                                        ? () async {
+                                            await handleCall(
+                                              documentSnapshot,
+                                              index,
+                                              'audio',
+                                              isReceiverInCall:
+                                                  documentSnapshot[
+                                                      'isReceiverInCall'],
+                                            );
+                                          }
+                                        : null,
+                                    icon: Icon(
+                                      Icons.phone,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
+                          ),
+                        );
                 },
               );
             }
@@ -162,31 +204,62 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> handleCall(
-    DocumentSnapshot<Object?> documentSnapshot,
-    int index,
-    String callType,
-  ) async {
-    final token = documentSnapshot['token'];
-    print('tokendfdf' + token);
+      DocumentSnapshot<Object?> documentSnapshot, int index, String callType,
+      {required String isReceiverInCall}) async {
+    if (isReceiverInCall == 'true') {
+      showReceiverIsAnotherCallSnackbar(documentSnapshot);
+    } else {
+      final token = documentSnapshot['token'];
+      print('tokendfdf' + token);
 
-    bool isRequestSuccessful = await fcmService.sendCallRequest(
-      fcmToken: '$token',
-      callerName: currentUserName,
-      callerImage: currentUserPhoto,
-      callType: callType,
-    );
-    
-    if (isRequestSuccessful) {
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (_) => CallingScreen(
-            documentsId: documentSnapshot.id,
-            userName: documentSnapshot['userName'],
-            userPhoto: documentSnapshot['profilePicture'],
-            callType: callType,
-          ),
-        ),
+      setState(() {
+        isDisableCallingButton = true;
+      });
+
+      bool isRequestSuccessful = await fcmService.sendCallRequest(
+        fcmToken: '$token',
+        callerName: currentUserName,
+        callerImage: currentUserPhoto,
+        callType: callType,
       );
+
+      if (isRequestSuccessful) {
+        setCallerInCallTrue(documentSnapshot);
+
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => CallingScreen(
+              documentsId: documentSnapshot.id,
+              userName: documentSnapshot['userName'],
+              userPhoto: documentSnapshot['profilePicture'],
+              callType: callType,
+            ),
+          ),
+        );
+      }
+
+      Future.delayed(Duration(seconds: 1), () {
+        setState(() {
+          isDisableCallingButton = false;
+        });
+      });
     }
+  }
+
+  void setCallerInCallTrue(DocumentSnapshot<Object?> documentSnapshot) {
+    //Caller InCall Status set True
+    collectionStream
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .update({'isReceiverInCall': 'true'})
+        .then((value) => print("isReceiverInCall => false"))
+        .catchError((error) => print("Failed to add user: $error"));
+  }
+
+  void showReceiverIsAnotherCallSnackbar(
+      DocumentSnapshot<Object?> documentSnapshot) {
+    final snackBar = SnackBar(
+      content: Text('${documentSnapshot['userName']} is in another call'),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

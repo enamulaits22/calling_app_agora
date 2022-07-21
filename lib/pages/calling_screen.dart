@@ -5,6 +5,7 @@ import 'package:calling_app/config/utils/sp_utils.dart';
 import 'package:calling_app/widgets/audio_call_tile.dart';
 import 'package:calling_app/widgets/custom_button.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -67,11 +68,25 @@ class _CallingScreenState extends State<CallingScreen> {
     });
 
     initPlatformState();
+    setCallerAndReceiverInCallTrue();
+  }
+
+  void setCallerAndReceiverInCallTrue() async{
+    //Receiver InCall Status set True
+    print(widget.documentsId);
+   await users
+        .doc('${widget.documentsId}')
+        .update({
+          'isReceiverInCall': 'true',
+        })
+        .then((value) => print("isReceiverInCall => false"))
+        .catchError((error) => print("Failed to add user: $error"));
   }
 
   Future<void> initPlatformState() async {
     final service = FlutterBackgroundService();
-    service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
+    service.invoke(
+        "stopService"); //:::::::::::::::::::::::::::stopped background service
     SharedPref.saveValueToShaprf(Config.callStatus, 'reset');
     if (defaultTargetPlatform == TargetPlatform.android) {
       await [Permission.microphone, Permission.camera].request();
@@ -110,7 +125,7 @@ class _CallingScreenState extends State<CallingScreen> {
     }
     await engine.joinChannel(Config.Token, Config.channelName, null, 0);
   }
-  
+
   Future<void> countDownTime() async {
     timer = Timer.periodic(Duration(seconds: 1), (time) {
       startSeconds = startSeconds + 1;
@@ -118,7 +133,9 @@ class _CallingScreenState extends State<CallingScreen> {
       int minutes = startSeconds ~/ 60;
       int seconds = (startSeconds % 60);
       setState(() {
-        callingTime = minutes.toString().padLeft(2, "0") + ":" + seconds.toString().padLeft(2, "0");
+        callingTime = minutes.toString().padLeft(2, "0") +
+            ":" +
+            seconds.toString().padLeft(2, "0");
       });
       print(callingTime);
     });
@@ -131,6 +148,7 @@ class _CallingScreenState extends State<CallingScreen> {
     timer.cancel();
     timerToleaveChannel.cancel();
   }
+
   // Build UI
   @override
   Widget build(BuildContext context) {
@@ -166,107 +184,118 @@ class _CallingScreenState extends State<CallingScreen> {
         //   title: const Text('Agora Call'),
         // ),
         body: widget.callType == 'audio'
-          ? AudioCallTile(
-              callerName: widget.userName,
-              callingTime: callingTime,
-              imageUrl: widget.userPhoto!,
-              isMutedAudio: isMutedAudio,
-              onEndCall: _onLeaveChannel,
-              onToggleMuteAudio: _onToggleMuteAudio,
-              isSpeakerEnable: isSpeakerEnable,
-              onToggleSpeaker: _onToggleSpeaker,
-            )
-          : Padding(
-          padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-          child: Stack(
-            children: [
-              Center(
-                child: _switch && _remoteUid !=0 ? _renderRemoteVideo() : _renderLocalPreview(),
-              ),
-              Align(
-                alignment: Alignment.topRight,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  color: Colors.blue,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _switch = !_switch;
-                      });
-                    },
-                    child: Center(
-                      child: _switch  && _remoteUid !=0 ? _renderLocalPreview() : _renderRemoteVideo(),
+            ? AudioCallTile(
+                callerName: widget.userName,
+                callingTime: callingTime,
+                imageUrl: widget.userPhoto!,
+                isMutedAudio: isMutedAudio,
+                onEndCall: _onLeaveChannel,
+                onToggleMuteAudio: _onToggleMuteAudio,
+                isSpeakerEnable: isSpeakerEnable,
+                onToggleSpeaker: _onToggleSpeaker,
+              )
+            : Padding(
+                padding:
+                    EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+                child: Stack(
+                  children: [
+                    Center(
+                      child: _switch && _remoteUid != 0
+                          ? _renderRemoteVideo()
+                          : _renderLocalPreview(),
                     ),
-                  ),
-                ),
-              ),
-               _remoteUid !=0 ? Align(
-                alignment: Alignment.topCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.2),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          widget.userName,
-                          style: TextStyle(fontSize: 22, color: Colors.white),
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        color: Colors.blue,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _switch = !_switch;
+                            });
+                          },
+                          child: Center(
+                            child: _switch && _remoteUid != 0
+                                ? _renderLocalPreview()
+                                : _renderRemoteVideo(),
+                          ),
                         ),
-                        Text(
-                          '$callingTime',
-                          style: TextStyle(fontSize: 22, color: Colors.white),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ) : SizedBox.shrink(),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 40.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CustomButton(
-                        icon: !isMutedAudio ? Icons.mic : Icons.mic_off,
-                        fillColor: Colors.white,
-                        iconColor: Colors.blue,
-                        iconSize: 18,
-                        onTapBtn: _onToggleMuteAudio,
+                    _remoteUid != 0
+                        ? Align(
+                            alignment: Alignment.topCenter,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withOpacity(0.2),
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      widget.userName,
+                                      style: TextStyle(
+                                          fontSize: 22, color: Colors.white),
+                                    ),
+                                    Text(
+                                      '$callingTime',
+                                      style: TextStyle(
+                                          fontSize: 22, color: Colors.white),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
+                        : SizedBox.shrink(),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 40.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CustomButton(
+                              icon: !isMutedAudio ? Icons.mic : Icons.mic_off,
+                              fillColor: Colors.white,
+                              iconColor: Colors.blue,
+                              iconSize: 18,
+                              onTapBtn: _onToggleMuteAudio,
+                            ),
+                            CustomButton(
+                              icon: Icons.call_end,
+                              fillColor: Colors.red,
+                              iconColor: Colors.white,
+                              iconSize: 30,
+                              onTapBtn: _onLeaveChannel,
+                            ),
+                            CustomButton(
+                              icon: !isMutedVideo
+                                  ? Icons.videocam
+                                  : Icons.videocam_off,
+                              fillColor: Colors.white,
+                              iconColor: Colors.blue,
+                              iconSize: 18,
+                              onTapBtn: _onToggleMuteVideo,
+                            ),
+                            CustomButton(
+                              icon: Icons.switch_camera,
+                              fillColor: Colors.white,
+                              iconColor: Colors.blue,
+                              iconSize: 18,
+                              onTapBtn: _onSwitchCamera,
+                            ),
+                          ],
+                        ),
                       ),
-                      CustomButton(
-                        icon: Icons.call_end,
-                        fillColor: Colors.red,
-                        iconColor: Colors.white,
-                        iconSize: 30,
-                        onTapBtn: _onLeaveChannel,
-                      ),
-                      CustomButton(
-                        icon: !isMutedVideo ? Icons.videocam : Icons.videocam_off,
-                        fillColor: Colors.white,
-                        iconColor: Colors.blue,
-                        iconSize: 18,
-                        onTapBtn: _onToggleMuteVideo,
-                      ),
-                      CustomButton(
-                        icon: Icons.switch_camera,
-                        fillColor: Colors.white,
-                        iconColor: Colors.blue,
-                        iconSize: 18,
-                        onTapBtn: _onSwitchCamera,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -317,24 +346,32 @@ class _CallingScreenState extends State<CallingScreen> {
   void _onLeaveChannel() async {
     await engine.leaveChannel();
 
-    //set receiver reject status initial to False
-    users
-        .doc('${widget.documentsId}')
-        .update({'hasReceiverRejectedCall': 'false'})
-        .then((value) => print("hasReceiverRejectedCall => false"))
-        .catchError((error) => print("Failed to add user: $error"));
-
-    // caller end call status set to True
-    users
-        .doc('${widget.documentsId}')
-        .update({'hasCallerEndCall': 'true'})
-        .then((value) => print("hasCallerEndCall => true"))
-        .catchError((error) => print("Failed to add user: $error"));
+    setCallingStatusAndInCallStatusToFalse();
 
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text("Call ended"),
     ));
+  }
+
+  void setCallingStatusAndInCallStatusToFalse() {
+     //set Receiver reject status initial to False, caller end call status set to True, receiver inCall status set to false
+    users
+        .doc('${widget.documentsId}')
+        .update({
+          'hasReceiverRejectedCall': 'false',
+          'hasCallerEndCall': 'true',
+          'isReceiverInCall': 'false',
+        })
+        .then((value) => print("hasReceiverRejectedCall => false"))
+        .catchError((error) => print("Failed to add user: $error"));
+
+    //Caller InCall Status set False
+    users
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .update({'isReceiverInCall': 'false'})
+        .then((value) => print("isReceiverInCall => false"))
+        .catchError((error) => print("Failed to add user: $error"));
   }
 
   //Switch camera
@@ -349,7 +386,7 @@ class _CallingScreenState extends State<CallingScreen> {
     });
     await engine.muteLocalAudioStream(isMutedAudio);
   }
-  
+
   //Enable and Disable video
   void _onToggleMuteVideo() async {
     setState(() {
@@ -357,7 +394,7 @@ class _CallingScreenState extends State<CallingScreen> {
     });
     await engine.muteLocalVideoStream(isMutedVideo);
   }
-  
+
   //Enable and Disable video
   void _onToggleSpeaker() async {
     setState(() {

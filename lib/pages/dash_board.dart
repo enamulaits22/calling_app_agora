@@ -68,10 +68,10 @@ class _DashboardPageState extends State<DashboardPage> {
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .snapshots()
         .listen((event) {
-      setState(() {
-        userProfilePicture = event['profilePicture'];
-        userProfileName = event['userName'];
-      });
+          if(event.exists){
+              userProfilePicture = event['profilePicture'];
+              userProfileName = event['userName'];
+          }
     });
   }
 
