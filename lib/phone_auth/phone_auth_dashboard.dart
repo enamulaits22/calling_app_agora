@@ -40,7 +40,6 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
                     ),
                     CustomTextField(
                       placeholderText: 'Enter OTP',
-                      obscureText: true,
                       textEditingController: otpController,
                       icon: Icons.password,
                       keyboardType: TextInputType.phone,

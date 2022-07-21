@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
 import 'dart:developer';
 
@@ -30,13 +29,15 @@ class _MyHomePageState extends State<MyHomePage> {
   String? fcmToken = '';
   String? fcmTitle = '';
   FCMService fcmService = FCMService();
-  CollectionReference collectionStream = FirebaseFirestore.instance.collection('users');
+  CollectionReference collectionStream =
+      FirebaseFirestore.instance.collection('users');
   late String userPhoneNo;
   String callerName = '';
   String callerImage = '';
   String callType = '';
   String currentUserName = '';
   String currentUserPhoto = '';
+  bool isDisableCallingButton = false;
   List<ContactModel> contactsList = [];
   bool isLoading = true;
 
@@ -51,15 +52,21 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
-  Future<void> getUserInitialData() async {
-    collectionStream.doc(FirebaseAuth.instance.currentUser!.uid).snapshots().listen((event) {
-      currentUserName = event['userName'];
-      currentUserPhoto = event['profilePicture'];
+  void getUserInitialData() {
+    collectionStream
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .snapshots()
+        .listen((event) {
+      if (event.exists) {
+        currentUserName = event['userName'];
+        currentUserPhoto = event['profilePicture'];
+      }
     });
   }
 
-  void getFcmToken() async{
-     userPhoneNo = (await SharedPref.getValueFromShrprs(Config.userPhoneNumber))!;
+  void getFcmToken() async {
+    userPhoneNo =
+        (await SharedPref.getValueFromShrprs(Config.userPhoneNumber))!;
 
     ConnectycubeFlutterCallKit.getToken().then((token) {
       log('FCM Token: $token');
@@ -87,17 +94,19 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> navigateToCallingPageFromBackground() async {
     final status = await SharedPref.getValueFromShrprs(Config.callStatus);
     final callerNameSp = await SharedPref.getValueFromShrprs(Config.callerName);
-    final callerImageSp = await SharedPref.getValueFromShrprs(Config.callerImage);
+    final callerImageSp =
+        await SharedPref.getValueFromShrprs(Config.callerImage);
     final callTypeSp = await SharedPref.getValueFromShrprs(Config.callType);
     log(status.toString());
     if (status.toString() == 'success') {
       Future.delayed(Duration(seconds: 0), () {
         navigatorKey.currentState?.push(
-          MaterialPageRoute(builder: (_) => CallingScreen(
-            userName: callerNameSp!,
-            userPhoto: callerImageSp!,
-            callType: callTypeSp!,
-          )),
+          MaterialPageRoute(
+              builder: (_) => CallingScreen(
+                    userName: callerNameSp!,
+                    userPhoto: callerImageSp!,
+                    callType: callTypeSp!,
+                  )),
         );
       });
     }
@@ -112,10 +121,18 @@ class _MyHomePageState extends State<MyHomePage> {
         String name = contacts[index].displayName!;
         contacts[index].phones!.map((data) {
           // log('==============$index: $name');
-          var phoneNumber = '+88' + data.value!.replaceAll("+88", "").replaceAll("-", "", ).replaceAll(" ", "");
+          var phoneNumber = '+88' +
+              data.value!
+                  .replaceAll("+88", "")
+                  .replaceAll(
+                    "-",
+                    "",
+                  )
+                  .replaceAll(" ", "");
           log('++++++++++++++++++${contacts[index].displayName!}::: $phoneNumber');
           setState(() {
-            contactsList.add(ContactModel(name: name, phoneNumber: phoneNumber));
+            contactsList
+                .add(ContactModel(name: name, phoneNumber: phoneNumber));
             isLoading = false;
           });
         }).toList();
@@ -126,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
         //   contactsList.add(ContactModel(name: name, phoneNumber: phoneNumber));
         //   isLoading = false;
         // });
-      }      
+      }
     }
   }
 
@@ -141,57 +158,97 @@ class _MyHomePageState extends State<MyHomePage> {
         builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
           if (streamSnapshot.hasData) {
             return isLoading
-            ? Center(child: CircularProgressIndicator())
-            : ListView.builder(
-              shrinkWrap: true,
-              itemCount: streamSnapshot.data!.docs.length,
-              itemBuilder: (context, index) {
-                final DocumentSnapshot documentSnapshot = streamSnapshot.data!.docs[index];
-                // log(documentSnapshot.data().toString());
+                ? Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: streamSnapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      final DocumentSnapshot documentSnapshot =
+                          streamSnapshot.data!.docs[index];
+                      // log(documentSnapshot.data().toString());
 
-                final isSameUser = userPhoneNo == documentSnapshot['phoneNumber'];
-                final hasNumberSaved = contactsList.any((element) => element.phoneNumber.contains(documentSnapshot['phoneNumber']));
-                final contaclListIndex = contactsList.indexWhere((element) => element.phoneNumber == documentSnapshot['phoneNumber']);
-                // log(contaclListIndex.toString());
-                // String userName = contactsList[contaclListIndex].name;
-                return (isSameUser || !hasNumberSaved) ? SizedBox.shrink() : Card(
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  child: ListTile(
-                    minLeadingWidth : 10,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    visualDensity: VisualDensity(horizontal: -4, vertical: -4),
-                    // title: Text(documentSnapshot['userName']),
-                    title: Text( contactsList[contaclListIndex].name),
-                    subtitle: Text(documentSnapshot['phoneNumber']),
-                    leading: ClipOval(
-                      child: SizedBox.fromSize(
-                        size: Size.fromRadius(22), // Image radius
-                        child: Image.network(documentSnapshot['profilePicture'], fit: BoxFit.cover),
-                      ),
-                    ),
-                    trailing: SizedBox(
-                      width: 100,
-                      child: Row(
-                        children: [
-                          IconButton(
-                            onPressed: () async {
-                              await handleCall(documentSnapshot, 'video',  contactsList[contaclListIndex].name);
-                            },
-                            icon: Icon(Icons.videocam, color: Colors.green,),
-                          ),
-                          IconButton(
-                            onPressed: () async {
-                              await handleCall(documentSnapshot, 'audio',  contactsList[contaclListIndex].name);
-                            },
-                            icon: Icon(Icons.phone, color: Colors.green,),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            );
+                      final isSameUser =
+                          userPhoneNo == documentSnapshot['phoneNumber'];
+                      final hasNumberSaved = contactsList.any((element) =>
+                          element.phoneNumber
+                              .contains(documentSnapshot['phoneNumber']));
+                      final contaclListIndex = contactsList.indexWhere(
+                          (element) =>
+                              element.phoneNumber ==
+                              documentSnapshot['phoneNumber']);
+                      // log(contaclListIndex.toString());
+                      // String userName = contactsList[contaclListIndex].name;
+                      return (isSameUser || !hasNumberSaved)
+                          ? SizedBox.shrink()
+                          : Card(
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              child: ListTile(
+                                minLeadingWidth: 10,
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                visualDensity:
+                                    VisualDensity(horizontal: -4, vertical: -4),
+                                // title: Text(documentSnapshot['userName']),
+                                title:
+                                    Text(contactsList[contaclListIndex].name),
+                                subtitle: Text(documentSnapshot['phoneNumber']),
+                                leading: ClipOval(
+                                  child: SizedBox.fromSize(
+                                    size: Size.fromRadius(22), // Image radius
+                                    child: Image.network(
+                                        documentSnapshot['profilePicture'],
+                                        fit: BoxFit.cover),
+                                  ),
+                                ),
+                                trailing: SizedBox(
+                                  width: 100,
+                                  child: Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: !isDisableCallingButton
+                                            ? () async {
+                                                await handleCall(
+                                                  documentSnapshot,
+                                                  'video',
+                                                  contactsList[contaclListIndex]
+                                                      .name,
+                                                  isReceiverInCall:
+                                                      documentSnapshot[
+                                                          'isReceiverInCall'],
+                                                );
+                                              }
+                                            : null,
+                                        icon: Icon(
+                                          Icons.videocam,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: !isDisableCallingButton
+                                            ? () async {
+                                                await handleCall(
+                                                  documentSnapshot,
+                                                  'audio',
+                                                  contactsList[contaclListIndex]
+                                                      .name,
+                                                  isReceiverInCall:
+                                                      documentSnapshot[
+                                                          'isReceiverInCall'],
+                                                );
+                                              }
+                                            : null,
+                                        icon: Icon(
+                                          Icons.phone,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                    },
+                  );
           }
           return const Center(child: CircularProgressIndicator());
         },
@@ -199,29 +256,53 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<void> handleCall(DocumentSnapshot<Object?> documentSnapshot, String callType, String calledUserName) async {
-    final token = documentSnapshot['token'];
-    print('tokendfdf' + token);
+  Future<void> handleCall(DocumentSnapshot<Object?> documentSnapshot,
+      String callType, String calledUserName,
+      {required String isReceiverInCall}) async {
+    if (isReceiverInCall == 'true') {
+      showReceiverIsAnotherCallToast(calledUserName);
+    } else {
+      final token = documentSnapshot['token'];
+      print('tokendfdf' + token);
 
-    bool isRequestSuccessful = await fcmService.sendCallRequest(
-      fcmToken: '$token',
-      callerName: currentUserName,
-      callerImage: currentUserPhoto,
-      callType: callType,
-    );
-    
-    if (isRequestSuccessful) {
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (_) => CallingScreen(
-            documentsId: documentSnapshot.id,
-            // userName: documentSnapshot['userName'],
-            userName: calledUserName,
-            userPhoto: documentSnapshot['profilePicture'],
-            callType: callType,
-          ),
-        ),
+      setState(() {
+        isDisableCallingButton = true;
+      });
+
+      bool isRequestSuccessful = await fcmService.sendCallRequest(
+        fcmToken: '$token',
+        callerName: currentUserName,
+        callerImage: currentUserPhoto,
+        callType: callType,
       );
+
+      if (isRequestSuccessful) {
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => CallingScreen(
+              documentsId: documentSnapshot.id,
+              // userName: documentSnapshot['userName'],
+              userName: calledUserName,
+              userPhoto: documentSnapshot['profilePicture'],
+              callType: callType,
+            ),
+          ),
+        );
+      }
+
+      Future.delayed(Duration(seconds: 1), (){
+        setState(() {
+          isDisableCallingButton = false;
+        });
+      });
     }
+  }
+
+  void showReceiverIsAnotherCallToast(
+      String calledUserName) {
+    final snackBar = SnackBar(
+      content: Text('$calledUserName is in another call'),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+
 // import 'dart:developer';
 import 'dart:math' as math;
 import 'package:calling_app/pages/calling_screen.dart';
@@ -13,8 +14,6 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 
 import '../config/config.dart';
 
-
-
 void initiateCall(String callerName, String callType, String callerImage) {
   print('momomo$callType');
   controlCall();
@@ -23,7 +22,8 @@ void initiateCall(String callerName, String callType, String callerImage) {
 
   CallEvent callEvent = CallEvent(
     sessionId: random.nextInt(10000).toString(),
-    callType: callType == 'audio' ? 0 : 1, // {0 :: Audio call}; {1 :: Video Call}
+    callType: callType == 'audio' ? 0 : 1,
+    // {0 :: Audio call}; {1 :: Video Call}
     callerId: 9644,
     callerName: callerName,
     opponentsIds: {1},
@@ -37,13 +37,12 @@ void initiateCall(String callerName, String callType, String callerImage) {
 }
 
 void rejectCallFromFirebaseAndUpdateFireStore(CallEvent callEvent) {
-   // the call was rejected
+  // the call was rejected
   final service = FlutterBackgroundService();
 
   CollectionReference users = FirebaseFirestore.instance.collection('users');
 
   Firebase.initializeApp().then((value) {
-
     final User? _firebaseUser = FirebaseAuth.instance.currentUser;
 
     users.doc(_firebaseUser!.uid).snapshots().listen((event) {
@@ -53,9 +52,10 @@ void rejectCallFromFirebaseAndUpdateFireStore(CallEvent callEvent) {
 
         //check if Receiver's hasCallerEndCall value
         if (data['hasCallerEndCall'] == 'true') {
-          ConnectycubeFlutterCallKit.reportCallEnded(sessionId: callEvent.sessionId);
+          ConnectycubeFlutterCallKit.reportCallEnded(
+              sessionId: callEvent.sessionId);
 
-          Future.delayed(Duration(seconds: 1), (){
+          Future.delayed(Duration(seconds: 1), () {
             //reset Receiver's hasCallerEndCall initial status set to False
             users
                 .doc('${_firebaseUser.uid}')
@@ -63,52 +63,53 @@ void rejectCallFromFirebaseAndUpdateFireStore(CallEvent callEvent) {
                 .then((value) => print("hasCallerEndCall => false"))
                 .catchError((error) => print("Failed to add user: $error"));
 
-            SharedPref.saveValueToShaprf(Config.callStatus,'reset');
-            service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
-
+            SharedPref.saveValueToShaprf(Config.callStatus, 'reset');
+            service.invoke(
+                "stopService"); //:::::::::::::::::::::::::::stopped background service
           });
-
         }
       }
     });
-
   });
 }
 
 void controlCall() {
-  
-  Future<void> _onCallAccepted(CallEvent callEvent) async {
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(builder: (_) => CallingScreen(
-        userName: callEvent.callerName,
-        userPhoto: callEvent.userInfo!['callerImage'],
-        callType: callEvent.callType == 0 ? 'audio' : 'video',
-      )),
-    );
-  }
-
-  Future<void> _onCallRejected(CallEvent callEvent) async {
-    // the call was rejected
-    final service = FlutterBackgroundService();
-    SharedPref.saveValueToShaprf(Config.callStatus,'reset');
-
-    await Firebase.initializeApp().then((value) {
-      CollectionReference users =
-          FirebaseFirestore.instance.collection('users');
-
-      final User? _firebaseUser = FirebaseAuth.instance.currentUser;
-      users
-          .doc('${_firebaseUser!.uid}')
-          .update({'hasReceiverRejectedCall': 'true'})
-          .then((value) => print("User Added"))
-          .catchError((error) => print("Failed to add user: $error"));
-    });
-
-    service.invoke("stopService"); //:::::::::::::::::::::::::::stopped background service
-  }
-
   ConnectycubeFlutterCallKit.instance.init(
     onCallAccepted: _onCallAccepted,
     onCallRejected: _onCallRejected,
   );
+}
+
+Future<void> _onCallAccepted(CallEvent callEvent) async {
+  navigatorKey.currentState?.push(
+    MaterialPageRoute(
+        builder: (_) => CallingScreen(
+              userName: callEvent.callerName,
+              userPhoto: callEvent.userInfo!['callerImage'],
+              callType: callEvent.callType == 0 ? 'audio' : 'video',
+            )),
+  );
+}
+
+Future<void> _onCallRejected(CallEvent callEvent) async {
+  // the call was rejected
+  final service = FlutterBackgroundService();
+  SharedPref.saveValueToShaprf(Config.callStatus, 'reset');
+
+  await Firebase.initializeApp().then((value) {
+    CollectionReference users = FirebaseFirestore.instance.collection('users');
+
+    final User? _firebaseUser = FirebaseAuth.instance.currentUser;
+    users
+        .doc('${_firebaseUser!.uid}')
+        .update({
+          'hasReceiverRejectedCall': 'true',
+          'isReceiverInCall': 'false',
+        })
+        .then((value) => print("User Added"))
+        .catchError((error) => print("Failed to add user: $error"));
+  });
+
+  service.invoke(
+      "stopService"); //:::::::::::::::::::::::::::stopped background service
 }
