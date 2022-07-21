@@ -48,6 +48,7 @@ dependencies:
   # sms_autofill: ^2.2.0
   # telephony: ^0.2.0
   image_picker: ^0.8.5+3
+  contacts_service: ^0.6.3
 
 dev_dependencies:
   flutter_test:
