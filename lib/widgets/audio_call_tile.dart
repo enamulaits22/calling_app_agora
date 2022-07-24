@@ -11,6 +11,7 @@ class AudioCallTile extends StatelessWidget {
   final VoidCallback onToggleMuteAudio;
   final bool isSpeakerEnable;
   final VoidCallback onToggleSpeaker;
+  final VoidCallback onSwitchVideo;
 
   const AudioCallTile({
     Key? key,
@@ -21,7 +22,8 @@ class AudioCallTile extends StatelessWidget {
     required this.onEndCall,
     required this.onToggleMuteAudio,
     required this.isSpeakerEnable,
-    required this.onToggleSpeaker
+    required this.onToggleSpeaker,
+    required this.onSwitchVideo,
   }) : super(key: key);
 
   @override
@@ -77,6 +79,13 @@ class AudioCallTile extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
+                  IconButton(
+                    onPressed: onSwitchVideo,
+                    icon: Icon(
+                      Icons.videocam,
+                      color: Colors.white,
+                    ),
+                  ),
                   Container(
                     decoration: isSpeakerEnable ? BoxDecoration(
                       color: Colors.grey.withOpacity(0.6),
