@@ -170,13 +170,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ? CustomTextButton(
                         title: 'submit',
                         onTapBtn: () async {
-                          if (userProfileName.isNotEmpty &&
-                              userProfilePicture.isNotEmpty) {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (_) => MyHomePage()),
-                              (route) => false,
-                            );
-                          } else {
+
                             if (_nameController.text.isNotEmpty) {
                               setState(() {
                                 isLoading = true;
@@ -207,8 +201,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 (route) => false,
                               );
                             }
-                          }
-                        },
+                          },
                       )
                     : Center(child: CircularProgressIndicator())
               ],

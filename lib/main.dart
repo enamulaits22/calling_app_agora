@@ -11,6 +11,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'dart:async';
 
 import 'config/config.dart';
+import 'navigation_bar/view/navigation_bar_page.dart';
 import 'services/setup_background_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -81,7 +82,7 @@ class _MyAppState extends State<MyApp> {
       home: _firebaseUser?.uid != null
           //? MyHomePage()
           //: AuthenticationPage(),
-        ? MyHomePage()
+        ? NavigationBarPage()
           : PhoneAuthForm(),
     );
   }

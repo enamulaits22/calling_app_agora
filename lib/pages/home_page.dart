@@ -25,7 +25,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage>
+    with AutomaticKeepAliveClientMixin {
   String? fcmToken = '';
   String? fcmTitle = '';
   FCMService fcmService = FCMService();
@@ -150,9 +151,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Flutter Call App'),
-      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: collectionStream.snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
@@ -305,4 +303,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

@@ -80,14 +80,14 @@ class _CallingScreenState extends State<CallingScreen> {
         .update({
           'isReceiverInCall': 'true',
         })
-        .then((value) => print("isReceiverInCall => false"))
+        .then((value) => print("isReceiverInCall => true"))
         .catchError((error) => print("Failed to add user: $error"));
 
     //Caller InCall Status set True
     users
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .update({'isReceiverInCall': 'true'})
-        .then((value) => print("isReceiverInCall => false"))
+        .then((value) => print("isReceiverInCall => true"))
         .catchError((error) => print("Failed to add user: $error"));
   }
 
