@@ -47,6 +47,7 @@ class _CallingScreenState extends State<CallingScreen> {
   late Timer timer;
   int startSeconds = 0;
   String callingTime = "connecting";
+  late String callType = widget.callType;
 
   @override
   void initState() {
@@ -127,7 +128,7 @@ class _CallingScreenState extends State<CallingScreen> {
     // Enable video
     await engine.enableVideo();
     // Join channel with channel name
-    if (widget.callType == 'audio') {
+    if (callType == 'audio') {
       await engine.setEnableSpeakerphone(isSpeakerEnable);
     }
     await engine.joinChannel(Config.Token, Config.channelName, null, 0);
@@ -190,7 +191,7 @@ class _CallingScreenState extends State<CallingScreen> {
         // appBar: AppBar(
         //   title: const Text('Agora Call'),
         // ),
-        body: widget.callType == 'audio'
+        body: callType == 'audio'
             ? AudioCallTile(
                 callerName: widget.userName,
                 callingTime: callingTime,
@@ -200,6 +201,7 @@ class _CallingScreenState extends State<CallingScreen> {
                 onToggleMuteAudio: _onToggleMuteAudio,
                 isSpeakerEnable: isSpeakerEnable,
                 onToggleSpeaker: _onToggleSpeaker,
+                onSwitchVideo: _onSwitchVideo,
               )
             : Padding(
                 padding:
@@ -408,5 +410,13 @@ class _CallingScreenState extends State<CallingScreen> {
       isSpeakerEnable = !isSpeakerEnable;
     });
     await engine.setEnableSpeakerphone(isSpeakerEnable);
+  }
+  
+  //Switch between video and audio
+  void _onSwitchVideo() async {
+    setState(() {
+      callType = 'video';
+    });
+    await engine.setEnableSpeakerphone(true);
   }
 }
